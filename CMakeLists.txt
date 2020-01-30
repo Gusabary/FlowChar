@@ -1,6 +1,7 @@
 project(FlowChar)
 
 cmake_minimum_required(VERSION 2.6)
+set(CMAKE_CXX_STANDARD 14)
 
 aux_source_directory(src DIR_SRCS)
 

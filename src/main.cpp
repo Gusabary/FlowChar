@@ -1,5 +1,12 @@
 #include <iostream>
 #include <cstdlib>
+#include <memory>
+#include <cstring>
+
+#include "codeParser.h"
+#include "tree.h"
+
+using namespace FC;
 
 struct ArgInfo {
     std::string codePath;
@@ -21,18 +28,18 @@ void printHelp() {
 
 ArgInfo parseArg(int argc, char **argv) {
     // -c <path>, specify path of code to be parsed, required.
-    // -o <path>, specify path of chart to be emitted, optional. If absent, print to stdout. 
-    
-    if (argc == 3 && argv[1] == "-c") {
+    // -o <path>, specify path of chart to be emitted, optional. If absent, print to stdout.
+
+    if (argc == 3 && !strcmp(argv[1], "-c")) {
         // must be -c
         return ArgInfo(argv[2]);
     }
     
     if (argc == 5) {
         // both -c and -o
-        if (argv[1] == "-c" && argv[3] == "-o")
+        if (!strcmp(argv[1], "-c") && !strcmp(argv[3], "-o"))
             return ArgInfo(argv[2], argv[4]);
-        if (argv[1] == "-o" && argv[3] == "-c")
+        if (!strcmp(argv[3], "-c") && !strcmp(argv[1], "-o"))
             return ArgInfo(argv[4], argv[2]);
     }
 
@@ -43,7 +50,9 @@ ArgInfo parseArg(int argc, char **argv) {
 
 int main(int argc, char **argv)
 {
-    // std::cout << argc << std::endl;
     ArgInfo argInfo = parseArg(argc, argv);
+
+    std::shared_ptr<IR::Tree> tree = std::make_shared<IR::Tree>();
+    std::unique_ptr<FE::CodeParser> codeParser = std::make_unique<FE::CodeParser>(argInfo.codePath, tree);
     return 0;
 }
