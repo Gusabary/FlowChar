@@ -26,15 +26,12 @@ void CodeParser::scan() {
         if (Token::delimiters.find(c) != Token::delimiters.end()) {
             // c is a delimiter
             if (str == Token::iftoken) {
-                // std::cout << "if" << std::endl;
                 this->tokenList.push_back(new IfToken());
             }
             else if (str == Token::elsetoken) {
-                // std::cout << "else" << std::endl;
                 this->tokenList.push_back(new ElseToken());
             }
             else if (str == Token::whiletoken) {
-                // std::cout << "while" << std::endl;
                 this->tokenList.push_back(new WhileToken());
             }
             else if (!str.empty()) {
@@ -64,6 +61,7 @@ void CodeParser::scan() {
             }
         }
     }
+    this->tokenList.push_back(new EndToken());
     this->printTokenList();
 }
 
@@ -83,7 +81,13 @@ void CodeParser::printTokenList() {
             std::cout << "stm-" << ((StmToken *)token)->sstm << std::endl;
         if (token->kind == Token::COND)
             std::cout << "cond-" << ((CondToken *)token)->cond << " ";
+        if (token->kind == Token::END)
+            std::cout << "$" << std::endl;
     }
+}
+
+void CodeParser::parse() {
+    
 }
 
 }}

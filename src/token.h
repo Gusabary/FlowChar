@@ -16,7 +16,8 @@ public:
         RBRACE,
         IF,
         ELSE,
-        WHILE
+        WHILE,
+        END
     };
 
     Kind kind;
@@ -81,6 +82,12 @@ class WhileToken : public Token
 {
 public:
     WhileToken();
+};
+
+class EndToken : public Token
+{
+public:
+    EndToken();
 };
 
 } // namespace FE

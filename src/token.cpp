@@ -29,5 +29,7 @@ ElseToken::ElseToken() : Token(Token::ELSE) {}
 
 WhileToken::WhileToken() : Token(Token::WHILE) {}
 
+EndToken::EndToken() : Token(Token::END) {}
+
 } // namespace FE
 } // namespace FC

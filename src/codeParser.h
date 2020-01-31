@@ -14,11 +14,13 @@ class CodeParser
 private:
     std::fstream fs;
     std::vector<Token *> tokenList;
+    std::vector<Token *> parseStack;
 
 public:
     CodeParser(const std::string &path, std::shared_ptr<IR::Tree> tree);
     ~CodeParser();
     void scan();
     void printTokenList();
+    void parse();
 };
 }}
