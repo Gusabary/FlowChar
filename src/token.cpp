@@ -31,5 +31,8 @@ WhileToken::WhileToken() : Token(Token::WHILE) {}
 
 EndToken::EndToken() : Token(Token::END) {}
 
+SeqToken::SeqToken() : Token(Token::SEQ) {}
+
+
 } // namespace FE
 } // namespace FC

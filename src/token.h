@@ -17,7 +17,8 @@ public:
         IF,
         ELSE,
         WHILE,
-        END
+        END,
+        SEQ
     };
 
     Kind kind;
@@ -88,6 +89,12 @@ class EndToken : public Token
 {
 public:
     EndToken();
+};
+
+class SeqToken : public Token
+{
+public:
+    SeqToken();
 };
 
 } // namespace FE

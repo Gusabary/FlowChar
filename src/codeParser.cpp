@@ -1,5 +1,6 @@
 #include <iostream>
 #include <cstdlib>
+#include <cassert>
 
 #include "codeParser.h"
 
@@ -90,4 +91,191 @@ void CodeParser::parse() {
     
 }
 
+CodeParser::parsingTableEntry CodeParser::lookupParsingTable(int cntState, Token::Kind tokenKind) {
+    switch (cntState) {
+        case 1: {
+            switch (tokenKind) {
+                case Token::STM:
+                    return parsingTableEntry(parsingTableEntry::SHIFT, 4);
+                case Token::IF:
+                    return parsingTableEntry(parsingTableEntry::SHIFT, 2);
+                case Token::WHILE:
+                    return parsingTableEntry(parsingTableEntry::SHIFT, 3);
+                case Token::SEQ:
+                    return parsingTableEntry(parsingTableEntry::GOTO, 18);
+                }
+                assert(0);
+        }
+        case 2: {
+            switch (tokenKind) {
+                case Token::COND:
+                    return parsingTableEntry(parsingTableEntry::SHIFT, 6);
+            }
+            assert(0);
+        }
+        case 3: {
+            switch (tokenKind) {
+                case Token::COND:
+                    return parsingTableEntry(parsingTableEntry::SHIFT, 14);
+            }
+            assert(0);
+        }
+        case 4: {
+            switch (tokenKind) {
+                case Token::STM:
+                    return parsingTableEntry(parsingTableEntry::SHIFT, 4);
+                case Token::IF:
+                    return parsingTableEntry(parsingTableEntry::SHIFT, 2);
+                case Token::WHILE:
+                    return parsingTableEntry(parsingTableEntry::SHIFT, 3);
+                case Token::RBRACE:
+                    return parsingTableEntry(parsingTableEntry::REDUCE, 4);
+                case Token::END:
+                    return parsingTableEntry(parsingTableEntry::REDUCE, 4);
+                case Token::SEQ:
+                    return parsingTableEntry(parsingTableEntry::GOTO, 5);
+            }
+            assert(0);
+        }
+        case 5: {
+            switch (tokenKind) {
+                case Token::RBRACE:
+                    return parsingTableEntry(parsingTableEntry::REDUCE, 5);
+                case Token::END:
+                    return parsingTableEntry(parsingTableEntry::REDUCE, 5);
+            }
+            assert(0);
+        }
+        case 6: {
+            switch (tokenKind) {
+                case Token::LBRACE:
+                    return parsingTableEntry(parsingTableEntry::SHIFT, 7);
+            }
+            assert(0);
+        }
+        case 7: {
+            switch (tokenKind) {
+                case Token::STM:
+                    return parsingTableEntry(parsingTableEntry::SHIFT, 4);
+                case Token::IF:
+                    return parsingTableEntry(parsingTableEntry::SHIFT, 2);
+                case Token::WHILE:
+                    return parsingTableEntry(parsingTableEntry::SHIFT, 3);
+                case Token::SEQ:
+                    return parsingTableEntry(parsingTableEntry::GOTO, 8);
+            }
+            assert(0);
+        }
+        case 8: {
+            switch (tokenKind) {
+                case Token::RBRACE:
+                    return parsingTableEntry(parsingTableEntry::SHIFT, 9);
+            }
+            assert(0);
+        }
+        case 9: {
+            switch (tokenKind) {
+                case Token::IF:
+                    return parsingTableEntry(parsingTableEntry::REDUCE, 1);
+                case Token::ELSE:
+                    return parsingTableEntry(parsingTableEntry::SHIFT, 10);
+                case Token::WHILE:
+                    return parsingTableEntry(parsingTableEntry::REDUCE, 1);
+                case Token::RBRACE:
+                    return parsingTableEntry(parsingTableEntry::REDUCE, 1);
+                case Token::END:
+                    return parsingTableEntry(parsingTableEntry::REDUCE, 1);
+            }
+            assert(0);
+        }
+        case 10: {
+            switch (tokenKind) {
+                case Token::RBRACE:
+                    return parsingTableEntry(parsingTableEntry::SHIFT, 11);
+            }
+            assert(0);
+        }
+        case 11: {
+            switch (tokenKind) {
+                case Token::STM:
+                    return parsingTableEntry(parsingTableEntry::SHIFT, 4);
+                case Token::IF:
+                    return parsingTableEntry(parsingTableEntry::SHIFT, 2);
+                case Token::WHILE:
+                    return parsingTableEntry(parsingTableEntry::SHIFT, 3);
+                case Token::SEQ:
+                    return parsingTableEntry(parsingTableEntry::GOTO, 12);
+            }
+            assert(0);
+        }
+        case 12: {
+            switch (tokenKind) {
+                case Token::RBRACE:
+                    return parsingTableEntry(parsingTableEntry::SHIFT, 13);
+            }
+            assert(0);
+        }
+        case 13: {
+            switch (tokenKind) {
+                case Token::IF:
+                    return parsingTableEntry(parsingTableEntry::REDUCE, 2);
+                case Token::WHILE:
+                    return parsingTableEntry(parsingTableEntry::REDUCE, 2);
+                case Token::RBRACE:
+                    return parsingTableEntry(parsingTableEntry::REDUCE, 2);
+                case Token::END:
+                    return parsingTableEntry(parsingTableEntry::REDUCE, 2);
+            }
+            assert(0);
+        }
+        case 14: {
+            switch (tokenKind) {
+                case Token::LBRACE:
+                    return parsingTableEntry(parsingTableEntry::SHIFT, 15);
+            }
+            assert(0);
+        }
+        case 15: {
+            switch (tokenKind) {
+                case Token::STM:
+                    return parsingTableEntry(parsingTableEntry::SHIFT, 4);
+                case Token::IF:
+                    return parsingTableEntry(parsingTableEntry::SHIFT, 2);
+                case Token::WHILE:
+                    return parsingTableEntry(parsingTableEntry::SHIFT, 3);
+                case Token::SEQ:
+                    return parsingTableEntry(parsingTableEntry::GOTO, 16);
+            }
+            assert(0);
+        }
+        case 16: {
+            switch (tokenKind) {
+                case Token::RBRACE:
+                    return parsingTableEntry(parsingTableEntry::SHIFT, 17);
+            }
+            assert(0);
+        }
+        case 17: {
+            switch (tokenKind) {
+                case Token::IF:
+                    return parsingTableEntry(parsingTableEntry::REDUCE, 3);
+                case Token::WHILE:
+                    return parsingTableEntry(parsingTableEntry::REDUCE, 3);
+                case Token::RBRACE:
+                    return parsingTableEntry(parsingTableEntry::REDUCE, 3);
+                case Token::END:
+                    return parsingTableEntry(parsingTableEntry::REDUCE, 3);
+            }
+            assert(0);
+        }
+        case 18: {
+            switch (tokenKind) {
+                case Token::END:
+                    return parsingTableEntry(parsingTableEntry::ACCEPT);
+            }
+            assert(0);
+        }
+    }
+    assert(0);
+}
 }}
