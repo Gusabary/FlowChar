@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <set>
 
 namespace FC { namespace FE {
 
@@ -22,14 +23,18 @@ public:
     int state;
     std::pair<int, int> pos;
 
-    static const std::string lparen;
-    static const std::string rparen;
-    static const std::string semicolon;
-    static const std::string lbrace;
-    static const std::string rbrace;
+    static const char lparen;
+    static const char rparen;
+    static const char semicolon;
+    static const char lbrace;
+    static const char rbrace;
     static const std::string iftoken;
     static const std::string elsetoken;
     static const std::string whiletoken;
+    static const std::set<char> delimiters;
+    static const std::set<char> whitespaces;
+
+    Token(const Kind kind);
 };
 
 class StmToken : public Token

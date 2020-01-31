@@ -2,28 +2,32 @@
 
 namespace FC { namespace FE {
 
-const std::string Token::lparen = "(";
-const std::string Token::rparen = ")";
-const std::string Token::semicolon = ";";
-const std::string Token::lbrace = "{";
-const std::string Token::rbrace = "}";
+const char Token::lparen = '(';
+const char Token::rparen = ')';
+const char Token::semicolon = ';';
+const char Token::lbrace = '{';
+const char Token::rbrace = '}';
 const std::string Token::iftoken = "if";
 const std::string Token::elsetoken = "else";
 const std::string Token::whiletoken = "while";
+const std::set<char> Token::delimiters = {';', '(', ')', '{', '}'};
+const std::set<char> Token::whitespaces = {' ', '\n', '\t'};
 
-StmToken::StmToken(const std::string &sstm) : sstm(sstm) {}
+Token::Token(const Kind kind) : kind(kind) {}
 
-CondToken::CondToken(const std::string &cond) : cond(cond) {}
+StmToken::StmToken(const std::string &sstm) : Token(Token::STM), sstm(sstm) {}
 
-LBraceToken::LBraceToken() {}
+CondToken::CondToken(const std::string &cond) : Token(Token::COND), cond(cond) {}
 
-RBraceToken::RBraceToken() {}
+LBraceToken::LBraceToken() : Token(Token::LBRACE) {}
 
-IfToken::IfToken() {}
+RBraceToken::RBraceToken() : Token(Token::RBRACE) {}
 
-ElseToken::ElseToken() {}
+IfToken::IfToken() : Token(Token::IF) {}
 
-WhileToken::WhileToken() {}
+ElseToken::ElseToken() : Token(Token::ELSE) {}
+
+WhileToken::WhileToken() : Token(Token::WHILE) {}
 
 } // namespace FE
 } // namespace FC

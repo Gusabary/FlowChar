@@ -54,5 +54,6 @@ int main(int argc, char **argv)
 
     std::shared_ptr<IR::Tree> tree = std::make_shared<IR::Tree>();
     std::unique_ptr<FE::CodeParser> codeParser = std::make_unique<FE::CodeParser>(argInfo.codePath, tree);
+    codeParser->scan();
     return 0;
 }
