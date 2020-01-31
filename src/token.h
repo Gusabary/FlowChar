@@ -18,7 +18,8 @@ public:
         ELSE,
         WHILE,
         END,
-        SEQ
+        SEQ,
+        BEGIN
     };
 
     Kind kind;
@@ -37,6 +38,7 @@ public:
     static const std::set<char> whitespaces;
 
     Token(const Kind kind);
+    Token(const Kind kind, const int state);
 };
 
 class StmToken : public Token
@@ -95,6 +97,12 @@ class SeqToken : public Token
 {
 public:
     SeqToken();
+};
+
+class BeginToken : public Token
+{
+public:
+    BeginToken();
 };
 
 } // namespace FE

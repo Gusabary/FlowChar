@@ -15,6 +15,8 @@ const std::set<char> Token::whitespaces = {' ', '\n', '\t'};
 
 Token::Token(const Kind kind) : kind(kind) {}
 
+Token::Token(const Kind kind, const int state) : kind(kind), state(state) {}
+
 StmToken::StmToken(const std::string &sstm) : Token(Token::STM), sstm(sstm) {}
 
 CondToken::CondToken(const std::string &cond) : Token(Token::COND), cond(cond) {}
@@ -32,6 +34,8 @@ WhileToken::WhileToken() : Token(Token::WHILE) {}
 EndToken::EndToken() : Token(Token::END) {}
 
 SeqToken::SeqToken() : Token(Token::SEQ) {}
+
+BeginToken::BeginToken() : Token(Token::BEGIN, 1) {}
 
 
 } // namespace FE
