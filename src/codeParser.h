@@ -19,5 +19,6 @@ public:
     CodeParser(const std::string &path, std::shared_ptr<IR::Tree> tree);
     ~CodeParser();
     void scan();
+    void printTokenList();
 };
 }}

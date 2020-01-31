@@ -64,6 +64,26 @@ void CodeParser::scan() {
             }
         }
     }
+    this->printTokenList();
+}
+
+void CodeParser::printTokenList() {
+    for (Token *token : this->tokenList) {
+        if (token->kind == Token::IF)
+            std::cout << "if ";
+        if (token->kind == Token::ELSE)
+            std::cout << "else ";
+        if (token->kind == Token::WHILE)
+            std::cout << "while ";
+        if (token->kind == Token::LBRACE)
+            std::cout << "{" << std::endl;
+        if (token->kind == Token::RBRACE)
+            std::cout << "}" << std::endl;
+        if (token->kind == Token::STM)
+            std::cout << "stm-" << ((StmToken *)token)->sstm << std::endl;
+        if (token->kind == Token::COND)
+            std::cout << "cond-" << ((CondToken *)token)->cond << " ";
+    }
 }
 
 }}
