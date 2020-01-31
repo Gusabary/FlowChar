@@ -21,6 +21,15 @@ public:
     Kind kind;
     int state;
     std::pair<int, int> pos;
+
+    static const std::string lparen;
+    static const std::string rparen;
+    static const std::string semicolon;
+    static const std::string lbrace;
+    static const std::string rbrace;
+    static const std::string iftoken;
+    static const std::string elsetoken;
+    static const std::string whiletoken;
 };
 
 class StmToken : public Token
@@ -42,40 +51,30 @@ public:
 class LBraceToken : public Token
 {
 public:
-    static const std::string lbrace;
-
     LBraceToken();
 };
 
 class RBraceToken : public Token
 {
 public:
-    static const std::string rbrace;
-
     RBraceToken();
 };
 
 class IfToken : public Token
 {
 public:
-    static const std::string iftoken;
-
     IfToken();
 };
 
 class ElseToken : public Token
 {
 public:
-    static const std::string elsetoken;
-
     ElseToken();
 };
 
 class WhileToken : public Token
 {
 public:
-    static const std::string whiletoken;
-
     WhileToken();
 };
 

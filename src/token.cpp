@@ -2,11 +2,14 @@
 
 namespace FC { namespace FE {
 
-const std::string LBraceToken::lbrace = "{";
-const std::string RBraceToken::rbrace = "}";
-const std::string IfToken::iftoken = "if";
-const std::string ElseToken::elsetoken = "else";
-const std::string WhileToken::whiletoken = "while";
+const std::string Token::lparen = "(";
+const std::string Token::rparen = ")";
+const std::string Token::semicolon = ";";
+const std::string Token::lbrace = "{";
+const std::string Token::rbrace = "}";
+const std::string Token::iftoken = "if";
+const std::string Token::elsetoken = "else";
+const std::string Token::whiletoken = "while";
 
 StmToken::StmToken(const std::string &sstm) : sstm(sstm) {}
 
