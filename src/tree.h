@@ -1,14 +1,17 @@
 #pragma once
 
 #include <string>
+#include <vector>
 
 namespace FC { namespace IR {
 
-class Tree
-{
-};
+// class SeqStm;
 
-class StmSeq;
+// class Tree
+// {
+// public:
+//     SeqStm *SeqStm;
+// };
 
 class Stm
 {
@@ -17,10 +20,25 @@ public:
     {
         SIMPLE,
         IF,
-        WHILE
+        WHILE,
+        SEQ
     };
 
     Kind kind;
+    Stm(const Kind kind);
+    virtual void Print(int d) const = 0;
+};
+
+class SeqStm : public Stm
+{
+public:
+    std::vector<Stm *> seq;
+
+    SeqStm();
+    SeqStm(Stm *const stm);
+
+    void Print(int d) const override;
+
 };
 
 class SimpleStm : public Stm
@@ -29,36 +47,37 @@ public:
     std::string sstm;
 
     SimpleStm(const std::string &sstm);
+
+    void Print(int d) const override;
+
 };
 
 class IfStm : public Stm
 {
 public:
     std::string cond;
-    StmSeq *thent;
-    StmSeq *elsee;
+    Stm *thent;
+    Stm *elsee;
 
-    IfStm(const std::string &cond, StmSeq *const thent);
-    IfStm(const std::string &cond, StmSeq *const thent, StmSeq *const elsee);
+    IfStm(const std::string &cond, Stm *const thent);
+    IfStm(const std::string &cond, Stm *const thent, Stm *const elsee);
+
+    void Print(int d) const override;
+
 };
 
 class WhileStm : public Stm
 {
 public:
     std::string cond;
-    StmSeq *body;
+    Stm *body;
 
-    WhileStm(const std::string &cond, StmSeq *const body);
+    WhileStm(const std::string &cond, Stm *const body);
+
+    void Print(int d) const override;
+
 };
 
-class StmSeq
-{
-public:
-    Stm *head;
-    StmSeq *tail;
-
-    StmSeq(Stm *const head, StmSeq *const tail);
-};
 
 } // namespace IR
 } // namespace FC

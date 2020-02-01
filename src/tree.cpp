@@ -1,15 +1,56 @@
+#include <iostream>
+
 #include "tree.h"
 
 namespace FC { namespace IR {
 
-SimpleStm::SimpleStm(const std::string &sstm) : sstm(sstm) {}
+Stm::Stm(const Kind kind) : kind(kind) {}
 
-IfStm::IfStm(const std::string &cond, StmSeq *const thent) : cond(cond), thent(thent), elsee(nullptr) {}
+SimpleStm::SimpleStm(const std::string &sstm) : Stm(Stm::SIMPLE), sstm(sstm) {}
 
-IfStm::IfStm(const std::string &cond, StmSeq *const thent, StmSeq *const elsee) : cond(cond), thent(thent), elsee(elsee) {}
+IfStm::IfStm(const std::string &cond, Stm *const thent) : Stm(Stm::IF), cond(cond), thent(thent), elsee(nullptr) {}
 
-WhileStm::WhileStm(const std::string &cond, StmSeq *const body) : cond(cond), body(body) {}
+IfStm::IfStm(const std::string &cond, Stm *const thent, Stm *const elsee) : Stm(Stm::IF), cond(cond), thent(thent), elsee(elsee) {}
 
-StmSeq::StmSeq(Stm *const head, StmSeq *const tail) : head(head), tail(tail) {}
+WhileStm::WhileStm(const std::string &cond, Stm *const body) : Stm(Stm::WHILE), cond(cond), body(body) {}
+
+SeqStm::SeqStm() : Stm(Stm::SEQ) {}
+
+SeqStm::SeqStm(Stm *const stm) : Stm(Stm::SEQ) {
+    this->seq.push_back(stm);
+}
+
+void SeqStm::Print(int d) const {
+    for (Stm *stm : this->seq) {
+        stm->Print(d);
+    }
+}
+
+static void indentHelper(int num) {
+    for (int i = 0; i < num; i++) {
+        std::cout << ' ';
+    }
+}
+
+void SimpleStm::Print(int d) const {
+    indentHelper(2 * d);
+    std::cout << this->sstm << std::endl;
+}
+
+void IfStm::Print(int d) const {
+    indentHelper(2 * d);
+    std::cout << "if " << this->cond << std::endl;
+    this->thent->Print(d + 1);
+    if (this->elsee) {
+        std::cout << "else" << std::endl;
+        this->elsee->Print(d + 1);
+    }
+}
+
+void WhileStm::Print(int d) const {
+    indentHelper(2 * d);
+    std::cout << "while " << this->cond << std::endl;
+    this->body->Print(d + 1);
+}
 
 }}
