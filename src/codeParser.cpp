@@ -6,7 +6,7 @@
 
 namespace FC { namespace FE {
 
-CodeParser::CodeParser(const std::string &path, std::shared_ptr<IR::Tree> tree) {
+CodeParser::CodeParser(const std::string &path, std::shared_ptr<IR::Stm> tree) : tree(tree) {
     this->fs = std::fstream();
     this->fs.open(path.c_str(), std::fstream::in);
     if (!this->fs.is_open()) {
@@ -88,7 +88,102 @@ void CodeParser::printTokenList() {
 }
 
 void CodeParser::parse() {
-    
+    this->parseStack.push_back(new BeginToken());
+    int nextToken = 0;
+
+    while (true) {
+        parsingTableEntry e = this->lookupParsingTable(this->parseStack.back()->state, this->tokenList[nextToken]->kind);
+        if (e.action == parsingTableEntry::SHIFT) {
+            this->tokenList[nextToken]->state = e.num;
+            this->parseStack.push_back(this->tokenList[nextToken]);
+            if (this->tokenList[nextToken]->kind == Token::STM) {
+                IR::SimpleStm *sstm = new IR::SimpleStm(((StmToken *)(this->tokenList[nextToken]))->sstm);
+                this->stmBuf.push_back(sstm);
+            }
+            nextToken++;
+        }
+        else if (e.action == parsingTableEntry::REDUCE) {
+            IR::Stm *tmpStm;
+            int back = this->stmBuf.size() - 1;
+            if (e.num == 4)
+            {
+                assert(this->stmBuf[back]->kind != IR::Stm::SEQ);
+                IR::Stm *newStm = new IR::SeqStm(this->stmBuf[back]);
+                this->stmBuf.pop_back();
+                this->stmBuf.push_back(newStm);
+            }
+            else if (e.num == 5) {
+                assert(this->stmBuf[back]->kind == IR::Stm::SEQ);
+                assert(this->stmBuf[back-1]->kind != IR::Stm::SEQ);
+                IR::Stm *seq = this->stmBuf[back];
+                ((IR::SeqStm *)seq)->seq.insert(((IR::SeqStm *)seq)->seq.begin(), this->stmBuf[back - 1]);
+                this->stmBuf.pop_back();
+                this->stmBuf.pop_back();
+                this->stmBuf.push_back(seq);
+            }
+            else if (e.num == 3) {
+                assert(this->stmBuf[back]->kind == IR::Stm::SEQ);
+                assert(this->parseStack[this->parseStack.size() - 4]->kind == Token::COND);
+                std::string cond = ((CondToken *)(this->parseStack[this->parseStack.size() - 4]))->cond;
+                IR::Stm *newStm = new IR::WhileStm(cond, this->stmBuf[back]);
+                this->stmBuf.pop_back();
+                this->stmBuf.push_back(newStm);
+            }
+            else if (e.num == 2) {
+                assert(this->stmBuf[back]->kind == IR::Stm::SEQ);
+                assert(this->stmBuf[back-1]->kind == IR::Stm::SEQ);
+                assert(this->parseStack[this->parseStack.size() - 8]->kind == Token::COND);
+                std::string cond = ((CondToken *)(this->parseStack[this->parseStack.size() - 8]))->cond;
+                IR::Stm *newStm = new IR::IfStm(cond, this->stmBuf[back - 1], this->stmBuf[back]);
+                this->stmBuf.pop_back();
+                this->stmBuf.pop_back();
+                this->stmBuf.push_back(newStm);
+            }
+            else if (e.num == 1) {
+                assert(this->stmBuf[back]->kind == IR::Stm::SEQ);
+                assert(this->parseStack[this->parseStack.size() - 4]->kind == Token::COND);
+                std::string cond = ((CondToken *)(this->parseStack[this->parseStack.size() - 4]))->cond;
+                IR::Stm *newStm = new IR::IfStm(cond, this->stmBuf[back]);
+                this->stmBuf.pop_back();
+                this->stmBuf.push_back(newStm);
+            }
+            else {
+                assert(0);
+            }
+
+            reductionInfo rinfo = this->getReductionInfo(e.num);
+            for (int i = 0; i < rinfo.popNum; i++) {
+                this->parseStack.pop_back();
+            }
+            int newState = this->lookupParsingTable(this->parseStack.back()->state, rinfo.newTokenKind).num;
+            this->parseStack.push_back(new Token(rinfo.newTokenKind, newState));
+        }
+        else if (e.action == parsingTableEntry::ACCEPT) {
+            assert(this->stmBuf.size() == 1);
+            this->tree.reset(this->stmBuf[0]);
+            break;
+        }
+        else {
+            assert(0);
+        }
+    }
+    this->tree->Print(0);
+}
+
+CodeParser::reductionInfo CodeParser::getReductionInfo(int productionNum) {
+    switch (productionNum) {
+        case 1:
+            return reductionInfo(Token::STM, 5);
+        case 2:
+            return reductionInfo(Token::STM, 9);
+        case 3:
+            return reductionInfo(Token::STM, 5);
+        case 4:
+            return reductionInfo(Token::SEQ, 1);
+        case 5:
+            return reductionInfo(Token::SEQ, 2);
+    }
+    assert(0);
 }
 
 CodeParser::parsingTableEntry CodeParser::lookupParsingTable(int cntState, Token::Kind tokenKind) {
@@ -175,6 +270,8 @@ CodeParser::parsingTableEntry CodeParser::lookupParsingTable(int cntState, Token
         }
         case 9: {
             switch (tokenKind) {
+                case Token::STM:
+                    return parsingTableEntry(parsingTableEntry::REDUCE, 1);
                 case Token::IF:
                     return parsingTableEntry(parsingTableEntry::REDUCE, 1);
                 case Token::ELSE:
@@ -190,7 +287,7 @@ CodeParser::parsingTableEntry CodeParser::lookupParsingTable(int cntState, Token
         }
         case 10: {
             switch (tokenKind) {
-                case Token::RBRACE:
+                case Token::LBRACE:
                     return parsingTableEntry(parsingTableEntry::SHIFT, 11);
             }
             assert(0);
@@ -217,6 +314,8 @@ CodeParser::parsingTableEntry CodeParser::lookupParsingTable(int cntState, Token
         }
         case 13: {
             switch (tokenKind) {
+                case Token::STM:
+                    return parsingTableEntry(parsingTableEntry::REDUCE, 2);
                 case Token::IF:
                     return parsingTableEntry(parsingTableEntry::REDUCE, 2);
                 case Token::WHILE:
@@ -257,6 +356,8 @@ CodeParser::parsingTableEntry CodeParser::lookupParsingTable(int cntState, Token
         }
         case 17: {
             switch (tokenKind) {
+                case Token::STM:
+                    return parsingTableEntry(parsingTableEntry::REDUCE, 3);
                 case Token::IF:
                     return parsingTableEntry(parsingTableEntry::REDUCE, 3);
                 case Token::WHILE:

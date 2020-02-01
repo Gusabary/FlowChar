@@ -15,6 +15,8 @@ private:
     std::fstream fs;
     std::vector<Token *> tokenList;
     std::vector<Token *> parseStack;
+    std::vector<IR::Stm *> stmBuf;
+    std::shared_ptr<IR::Stm> tree;
 
     struct parsingTableEntry {
         enum Action {
@@ -29,12 +31,20 @@ private:
         parsingTableEntry(Action action, int num) : action(action), num(num) {}
     };
 
+    struct reductionInfo {
+        Token::Kind newTokenKind;
+        int popNum;
+
+        reductionInfo(Token::Kind newTokenKind, int popNum) : newTokenKind(newTokenKind), popNum(popNum) {}
+    };
+
 public:
-    CodeParser(const std::string &path, std::shared_ptr<IR::Tree> tree);
+    CodeParser(const std::string &path, std::shared_ptr<IR::Stm> tree);
     ~CodeParser();
     void scan();
     void printTokenList();
     void parse();
     parsingTableEntry lookupParsingTable(int cntState, Token::Kind tokenKind);
+    reductionInfo getReductionInfo(int productionNum);
 };
 }}

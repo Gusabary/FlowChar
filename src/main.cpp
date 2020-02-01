@@ -52,8 +52,9 @@ int main(int argc, char **argv)
 {
     ArgInfo argInfo = parseArg(argc, argv);
 
-    std::shared_ptr<IR::Tree> tree = std::make_shared<IR::Tree>();
+    std::shared_ptr<IR::Stm> tree = std::make_shared<IR::SeqStm>();
     std::unique_ptr<FE::CodeParser> codeParser = std::make_unique<FE::CodeParser>(argInfo.codePath, tree);
     codeParser->scan();
+    codeParser->parse();
     return 0;
 }
