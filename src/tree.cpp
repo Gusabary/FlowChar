@@ -42,6 +42,7 @@ void IfStm::Print(int d) const {
     std::cout << "if " << this->cond << std::endl;
     this->thent->Print(d + 1);
     if (this->elsee) {
+        indentHelper(2 * d);
         std::cout << "else" << std::endl;
         this->elsee->Print(d + 1);
     }
