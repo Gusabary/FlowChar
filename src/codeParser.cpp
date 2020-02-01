@@ -22,36 +22,46 @@ CodeParser::~CodeParser() {
 void CodeParser::scan() {
     char c;
     std::string str;
+    std::pair<int, int> cntPos = std::make_pair<int, int>(1, 0);
     while (this->fs.get(c))
     {
+        // update current position
+        if (c == '\n') {
+            cntPos.first++;
+            cntPos.second = 0;
+        }
+        else {
+            cntPos.second++;
+        }
+
         if (Token::delimiters.find(c) != Token::delimiters.end()) {
             // c is a delimiter
             if (str == Token::iftoken) {
-                this->tokenList.push_back(new IfToken());
+                this->tokenList.push_back(new IfToken(cntPos));
             }
             else if (str == Token::elsetoken) {
-                this->tokenList.push_back(new ElseToken());
+                this->tokenList.push_back(new ElseToken(cntPos));
             }
             else if (str == Token::whiletoken) {
-                this->tokenList.push_back(new WhileToken());
+                this->tokenList.push_back(new WhileToken(cntPos));
             }
             else if (!str.empty()) {
                 // cond or simple stm
                 if (c == Token::rparen) {
                     // cond
-                    this->tokenList.push_back(new CondToken(str));
+                    this->tokenList.push_back(new CondToken(str, cntPos));
                 }
                 else {
                     // simple stm
-                    this->tokenList.push_back(new StmToken(str));
+                    this->tokenList.push_back(new StmToken(str, cntPos));
                 }
             }
 
             if (c == Token::lbrace) {
-                this->tokenList.push_back(new LBraceToken());
+                this->tokenList.push_back(new LBraceToken(cntPos));
             }
             else if (c == Token::rbrace) {
-                this->tokenList.push_back(new RBraceToken());
+                this->tokenList.push_back(new RBraceToken(cntPos));
             }
             str.clear();
         }
@@ -63,27 +73,28 @@ void CodeParser::scan() {
         }
     }
     this->tokenList.push_back(new EndToken());
-    this->printTokenList();
+    // this->printTokenList();
 }
 
 void CodeParser::printTokenList() {
     for (Token *token : this->tokenList) {
         if (token->kind == Token::IF)
-            std::cout << "if ";
+            std::cout << "if";
         if (token->kind == Token::ELSE)
-            std::cout << "else ";
+            std::cout << "else";
         if (token->kind == Token::WHILE)
-            std::cout << "while ";
+            std::cout << "while";
         if (token->kind == Token::LBRACE)
-            std::cout << "{" << std::endl;
+            std::cout << "{";
         if (token->kind == Token::RBRACE)
-            std::cout << "}" << std::endl;
+            std::cout << "}";
         if (token->kind == Token::STM)
-            std::cout << "stm-" << ((StmToken *)token)->sstm << std::endl;
+            std::cout << "stm-" << ((StmToken *)token)->sstm;
         if (token->kind == Token::COND)
-            std::cout << "cond-" << ((CondToken *)token)->cond << " ";
+            std::cout << "cond-" << ((CondToken *)token)->cond;
         if (token->kind == Token::END)
             std::cout << "$" << std::endl;
+        std::cout << "   (" << token->pos.first << ", " << token->pos.second << ")" << std::endl;
     }
 }
 
@@ -92,7 +103,7 @@ void CodeParser::parse() {
     int nextToken = 0;
 
     while (true) {
-        parsingTableEntry e = this->lookupParsingTable(this->parseStack.back()->state, this->tokenList[nextToken]->kind);
+        parsingTableEntry e = this->lookupParsingTable(this->parseStack.back()->state, this->tokenList[nextToken]->kind, this->parseStack.back()->pos);
         if (e.action == parsingTableEntry::SHIFT) {
             this->tokenList[nextToken]->state = e.num;
             this->parseStack.push_back(this->tokenList[nextToken]);
@@ -152,11 +163,13 @@ void CodeParser::parse() {
             }
 
             reductionInfo rinfo = this->getReductionInfo(e.num);
-            for (int i = 0; i < rinfo.popNum; i++) {
+            std::pair<int, int> newPos = this->parseStack.back()->pos;
+            for (int i = 0; i < rinfo.popNum; i++)
+            {
                 this->parseStack.pop_back();
             }
-            int newState = this->lookupParsingTable(this->parseStack.back()->state, rinfo.newTokenKind).num;
-            this->parseStack.push_back(new Token(rinfo.newTokenKind, newState));
+            int newState = this->lookupParsingTable(this->parseStack.back()->state, rinfo.newTokenKind, this->parseStack.back()->pos).num;
+            this->parseStack.push_back(new Token(rinfo.newTokenKind, newState, newPos));
         }
         else if (e.action == parsingTableEntry::ACCEPT) {
             assert(this->stmBuf.size() == 1);
@@ -186,7 +199,7 @@ CodeParser::reductionInfo CodeParser::getReductionInfo(int productionNum) {
     assert(0);
 }
 
-CodeParser::parsingTableEntry CodeParser::lookupParsingTable(int cntState, Token::Kind tokenKind) {
+CodeParser::parsingTableEntry CodeParser::lookupParsingTable(int cntState, Token::Kind tokenKind, std::pair<int, int> pos) {
     switch (cntState) {
         case 1: {
             switch (tokenKind) {
@@ -199,21 +212,24 @@ CodeParser::parsingTableEntry CodeParser::lookupParsingTable(int cntState, Token
                 case Token::SEQ:
                     return parsingTableEntry(parsingTableEntry::GOTO, 18);
                 }
-                assert(0);
+                std::cout << "Compile error near (" << pos.first << ", " << pos.second << ")." << std::endl;
+                exit(-1);
         }
         case 2: {
             switch (tokenKind) {
                 case Token::COND:
                     return parsingTableEntry(parsingTableEntry::SHIFT, 6);
             }
-            assert(0);
+            std::cout << "Compile error near (" << pos.first << ", " << pos.second << ")." << std::endl;
+                exit(-1);
         }
         case 3: {
             switch (tokenKind) {
                 case Token::COND:
                     return parsingTableEntry(parsingTableEntry::SHIFT, 14);
             }
-            assert(0);
+            std::cout << "Compile error near (" << pos.first << ", " << pos.second << ")." << std::endl;
+                exit(-1);
         }
         case 4: {
             switch (tokenKind) {
@@ -230,7 +246,8 @@ CodeParser::parsingTableEntry CodeParser::lookupParsingTable(int cntState, Token
                 case Token::SEQ:
                     return parsingTableEntry(parsingTableEntry::GOTO, 5);
             }
-            assert(0);
+            std::cout << "Compile error near (" << pos.first << ", " << pos.second << ")." << std::endl;
+                exit(-1);
         }
         case 5: {
             switch (tokenKind) {
@@ -239,14 +256,16 @@ CodeParser::parsingTableEntry CodeParser::lookupParsingTable(int cntState, Token
                 case Token::END:
                     return parsingTableEntry(parsingTableEntry::REDUCE, 5);
             }
-            assert(0);
+            std::cout << "Compile error near (" << pos.first << ", " << pos.second << ")." << std::endl;
+                exit(-1);
         }
         case 6: {
             switch (tokenKind) {
                 case Token::LBRACE:
                     return parsingTableEntry(parsingTableEntry::SHIFT, 7);
             }
-            assert(0);
+            std::cout << "Compile error near (" << pos.first << ", " << pos.second << ")." << std::endl;
+                exit(-1);
         }
         case 7: {
             switch (tokenKind) {
@@ -259,14 +278,16 @@ CodeParser::parsingTableEntry CodeParser::lookupParsingTable(int cntState, Token
                 case Token::SEQ:
                     return parsingTableEntry(parsingTableEntry::GOTO, 8);
             }
-            assert(0);
+            std::cout << "Compile error near (" << pos.first << ", " << pos.second << ")." << std::endl;
+                exit(-1);
         }
         case 8: {
             switch (tokenKind) {
                 case Token::RBRACE:
                     return parsingTableEntry(parsingTableEntry::SHIFT, 9);
             }
-            assert(0);
+            std::cout << "Compile error near (" << pos.first << ", " << pos.second << ")." << std::endl;
+                exit(-1);
         }
         case 9: {
             switch (tokenKind) {
@@ -283,14 +304,16 @@ CodeParser::parsingTableEntry CodeParser::lookupParsingTable(int cntState, Token
                 case Token::END:
                     return parsingTableEntry(parsingTableEntry::REDUCE, 1);
             }
-            assert(0);
+            std::cout << "Compile error near (" << pos.first << ", " << pos.second << ")." << std::endl;
+                exit(-1);
         }
         case 10: {
             switch (tokenKind) {
                 case Token::LBRACE:
                     return parsingTableEntry(parsingTableEntry::SHIFT, 11);
             }
-            assert(0);
+            std::cout << "Compile error near (" << pos.first << ", " << pos.second << ")." << std::endl;
+                exit(-1);
         }
         case 11: {
             switch (tokenKind) {
@@ -303,14 +326,16 @@ CodeParser::parsingTableEntry CodeParser::lookupParsingTable(int cntState, Token
                 case Token::SEQ:
                     return parsingTableEntry(parsingTableEntry::GOTO, 12);
             }
-            assert(0);
+            std::cout << "Compile error near (" << pos.first << ", " << pos.second << ")." << std::endl;
+                exit(-1);
         }
         case 12: {
             switch (tokenKind) {
                 case Token::RBRACE:
                     return parsingTableEntry(parsingTableEntry::SHIFT, 13);
             }
-            assert(0);
+            std::cout << "Compile error near (" << pos.first << ", " << pos.second << ")." << std::endl;
+                exit(-1);
         }
         case 13: {
             switch (tokenKind) {
@@ -325,14 +350,16 @@ CodeParser::parsingTableEntry CodeParser::lookupParsingTable(int cntState, Token
                 case Token::END:
                     return parsingTableEntry(parsingTableEntry::REDUCE, 2);
             }
-            assert(0);
+            std::cout << "Compile error near (" << pos.first << ", " << pos.second << ")." << std::endl;
+                exit(-1);
         }
         case 14: {
             switch (tokenKind) {
                 case Token::LBRACE:
                     return parsingTableEntry(parsingTableEntry::SHIFT, 15);
             }
-            assert(0);
+            std::cout << "Compile error near (" << pos.first << ", " << pos.second << ")." << std::endl;
+                exit(-1);
         }
         case 15: {
             switch (tokenKind) {
@@ -345,14 +372,16 @@ CodeParser::parsingTableEntry CodeParser::lookupParsingTable(int cntState, Token
                 case Token::SEQ:
                     return parsingTableEntry(parsingTableEntry::GOTO, 16);
             }
-            assert(0);
+            std::cout << "Compile error near (" << pos.first << ", " << pos.second << ")." << std::endl;
+                exit(-1);
         }
         case 16: {
             switch (tokenKind) {
                 case Token::RBRACE:
                     return parsingTableEntry(parsingTableEntry::SHIFT, 17);
             }
-            assert(0);
+            std::cout << "Compile error near (" << pos.first << ", " << pos.second << ")." << std::endl;
+                exit(-1);
         }
         case 17: {
             switch (tokenKind) {
@@ -367,14 +396,16 @@ CodeParser::parsingTableEntry CodeParser::lookupParsingTable(int cntState, Token
                 case Token::END:
                     return parsingTableEntry(parsingTableEntry::REDUCE, 3);
             }
-            assert(0);
+            std::cout << "Compile error near (" << pos.first << ", " << pos.second << ")." << std::endl;
+                exit(-1);
         }
         case 18: {
             switch (tokenKind) {
                 case Token::END:
                     return parsingTableEntry(parsingTableEntry::ACCEPT);
             }
-            assert(0);
+            std::cout << "Compile error near (" << pos.first << ", " << pos.second << ")." << std::endl;
+                exit(-1);
         }
     }
     assert(0);

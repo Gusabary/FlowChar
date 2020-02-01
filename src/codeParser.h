@@ -44,7 +44,7 @@ public:
     void scan();
     void printTokenList();
     void parse();
-    parsingTableEntry lookupParsingTable(int cntState, Token::Kind tokenKind);
+    parsingTableEntry lookupParsingTable(int cntState, Token::Kind tokenKind, std::pair<int, int> pos);
     reductionInfo getReductionInfo(int productionNum);
 };
 }}

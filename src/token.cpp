@@ -15,27 +15,29 @@ const std::set<char> Token::whitespaces = {' ', '\n', '\t'};
 
 Token::Token(const Kind kind) : kind(kind) {}
 
-Token::Token(const Kind kind, const int state) : kind(kind), state(state) {}
+Token::Token(const Kind kind, std::pair<int, int> pos) : kind(kind), pos(pos) {}
 
-StmToken::StmToken(const std::string &sstm) : Token(Token::STM), sstm(sstm) {}
+Token::Token(const Kind kind, const int state, std::pair<int, int> pos) : kind(kind), state(state), pos(pos) {}
 
-CondToken::CondToken(const std::string &cond) : Token(Token::COND), cond(cond) {}
+StmToken::StmToken(const std::string &sstm, std::pair<int, int> pos) : Token(Token::STM, pos), sstm(sstm) {}
 
-LBraceToken::LBraceToken() : Token(Token::LBRACE) {}
+CondToken::CondToken(const std::string &cond, std::pair<int, int> pos) : Token(Token::COND, pos), cond(cond) {}
 
-RBraceToken::RBraceToken() : Token(Token::RBRACE) {}
+LBraceToken::LBraceToken(std::pair<int, int> pos) : Token(Token::LBRACE, pos) {}
 
-IfToken::IfToken() : Token(Token::IF) {}
+RBraceToken::RBraceToken(std::pair<int, int> pos) : Token(Token::RBRACE, pos) {}
 
-ElseToken::ElseToken() : Token(Token::ELSE) {}
+IfToken::IfToken(std::pair<int, int> pos) : Token(Token::IF, pos) {}
 
-WhileToken::WhileToken() : Token(Token::WHILE) {}
+ElseToken::ElseToken(std::pair<int, int> pos) : Token(Token::ELSE, pos) {}
+
+WhileToken::WhileToken(std::pair<int, int> pos) : Token(Token::WHILE, pos) {}
 
 EndToken::EndToken() : Token(Token::END) {}
 
 SeqToken::SeqToken() : Token(Token::SEQ) {}
 
-BeginToken::BeginToken() : Token(Token::BEGIN, 1) {}
+BeginToken::BeginToken() : Token(Token::BEGIN, 1, std::make_pair<int, int>(0, 0)) {}
 
 
 } // namespace FE

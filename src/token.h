@@ -38,7 +38,8 @@ public:
     static const std::set<char> whitespaces;
 
     Token(const Kind kind);
-    Token(const Kind kind, const int state);
+    Token(const Kind kind, std::pair<int, int> pos);
+    Token(const Kind kind, const int state, std::pair<int, int> pos);
 };
 
 class StmToken : public Token
@@ -46,7 +47,7 @@ class StmToken : public Token
 public:
     std::string sstm;
 
-    StmToken(const std::string &sstm);
+    StmToken(const std::string &sstm, std::pair<int, int> pos);
 };
 
 class CondToken : public Token
@@ -54,37 +55,37 @@ class CondToken : public Token
 public:
     std::string cond;
 
-    CondToken(const std::string &cond);
+    CondToken(const std::string &cond, std::pair<int, int> pos);
 };
 
 class LBraceToken : public Token
 {
 public:
-    LBraceToken();
+    LBraceToken(std::pair<int, int> pos);
 };
 
 class RBraceToken : public Token
 {
 public:
-    RBraceToken();
+    RBraceToken(std::pair<int, int> pos);
 };
 
 class IfToken : public Token
 {
 public:
-    IfToken();
+    IfToken(std::pair<int, int> pos);
 };
 
 class ElseToken : public Token
 {
 public:
-    ElseToken();
+    ElseToken(std::pair<int, int> pos);
 };
 
 class WhileToken : public Token
 {
 public:
-    WhileToken();
+    WhileToken(std::pair<int, int> pos);
 };
 
 class EndToken : public Token
