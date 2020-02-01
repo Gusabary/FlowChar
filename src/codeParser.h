@@ -14,9 +14,6 @@ class CodeParser
 private:
     std::fstream fs;
     std::vector<Token *> tokenList;
-    std::vector<Token *> parseStack;
-    std::vector<IR::Stm *> stmBuf;
-    std::shared_ptr<IR::Stm> tree;
 
     struct parsingTableEntry {
         enum Action {
@@ -39,11 +36,11 @@ private:
     };
 
 public:
-    CodeParser(const std::string &path, std::shared_ptr<IR::Stm> tree);
+    CodeParser(const std::string &path);
     ~CodeParser();
     void scan();
     void printTokenList();
-    void parse();
+    std::shared_ptr<IR::Stm> parse();
     parsingTableEntry lookupParsingTable(int cntState, Token::Kind tokenKind, std::pair<int, int> pos);
     reductionInfo getReductionInfo(int productionNum);
 };
