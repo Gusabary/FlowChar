@@ -14,6 +14,18 @@ struct AttachInfo {
     AttachInfo(int lWidth, int rWidth, int height) : lWidth(lWidth), rWidth(rWidth), height(height) {}
 };
 
+using posT = std::pair<int, int>;
+using chartT = std::vector<std::vector<char>>;
+
+struct DrawInfo {
+    int height;
+    posT arrowAFrom;
+    posT arrowBFrom;  // make sense only to if-box and while-box
+
+    DrawInfo(int height, posT arrowAFrom) : height(height), arrowAFrom(arrowAFrom) {}
+    DrawInfo(int height, posT arrowAFrom, posT arrowBFrom) : height(height), arrowAFrom(arrowAFrom), arrowBFrom(arrowBFrom) {}
+};
+
 class Box
 {
 public:
@@ -26,8 +38,14 @@ public:
     };
 
     Kind kind;
+    int lWidth;  // width of left side of axis
+    int rWidth;  // width of right side of axis
+    int width;  // width of the stm box, must be odd
+
     Box(const Kind kind);
     virtual AttachInfo Attach() = 0;
+    virtual DrawInfo Draw(chartT &chart, const posT &pos) = 0;
+    void drawArrow(const posT &from, const posT &to, const int vertical = -1);
     virtual void Print(int d) const = 0;
 };
 
@@ -39,6 +57,7 @@ public:
     SeqBox();
     
     AttachInfo Attach() override;
+    DrawInfo Draw(chartT &chart, const posT &pos) override;
     void Print(int d) const override;
 };
 
@@ -47,14 +66,10 @@ class SimpleBox : public Box
 public:
     std::string content;
 
-    int lWidth;  // width of left side of axis
-    int rWidth;  // width of right side of axis
-    std::pair<int, int> pos;
-    int width;  // width of the stm box, must be odd
-
     SimpleBox(const std::string &content);
   
     AttachInfo Attach() override;
+    DrawInfo Draw(chartT &chart, const posT &pos) override;
     void Print(int d) const override;
 };
 
@@ -67,10 +82,6 @@ public:
 
     bool hasElse;
     bool nSide;  // if true, 'no' branch is at left side. make sense without else branch
-    int lWidth;  // width of left side of axis
-    int rWidth;  // width of right side of axis
-    std::pair<int, int> pos;
-    int width;  // width of the cond box, must be odd
     int axisDistance;  // distance between side axis and center one. make sense with else branch
     bool hasNext;  // if true, can point to a box eventually, otherwise point to 'O'
 
@@ -78,6 +89,7 @@ public:
     IfBox(const std::string &content, Box *const thent, Box *const elsee);
   
     AttachInfo Attach() override;
+    DrawInfo Draw(chartT &chart, const posT &pos) override;
     void Print(int d) const override;
 };
 
@@ -87,15 +99,12 @@ public:
     std::string content;
     Box *body;
 
-    int lWidth;  // width of left side of axis
-    int rWidth;  // width of right side of axis
-    std::pair<int, int> pos;
-    int width;  // width of the cond box, must be odd
     bool hasNext;  // if true, can point to a box eventually, otherwise point to 'O'
 
     WhileBox(const std::string &content, Box *const body);
   
     AttachInfo Attach() override;
+    DrawInfo Draw(chartT &chart, const posT &pos) override;
     void Print(int d) const override;
 };
 
