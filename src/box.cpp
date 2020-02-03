@@ -78,6 +78,48 @@ AttachInfo WhileBox::Attach() {
     return AttachInfo(this->lWidth, this->rWidth);
 }
 
+
+void SeqBox::Print(int d) const {
+    for (Box *box : this->seq) {
+        box->Print(d);
+    }
+}
+
+static void indentHelper(int num) {
+    for (int i = 0; i < num; i++) {
+        std::cout << ' ';
+    }
+}
+
+void SimpleBox::Print(int d) const {
+    indentHelper(2 * d);
+    std::cout << this->content << "  (W: " << this->width
+     << ", L: " << this->lWidth
+     << ", R: " << this->rWidth << ")" << std::endl;
+}
+
+void IfBox::Print(int d) const {
+    indentHelper(2 * d);
+    std::cout << "if " << this->content << "  (W: " << this->width
+     << ", L: " << this->lWidth
+     << ", R: " << this->rWidth 
+     << ", AD: " << this->axisDistance << ")" << std::endl;
+    this->thent->Print(d + 1);
+    if (this->elsee) {
+        indentHelper(2 * d);
+        std::cout << "else" << std::endl;
+        this->elsee->Print(d + 1);
+    }
+}
+
+void WhileBox::Print(int d) const {
+    indentHelper(2 * d);
+    std::cout << "while " << this->content << "  (W: " << this->width
+     << ", L: " << this->lWidth
+     << ", R: " << this->rWidth << ")" << std::endl;
+    this->body->Print(d + 1);
+}
+
 }}
 
 

@@ -27,6 +27,7 @@ public:
     Kind kind;
     Box(const Kind kind);
     virtual AttachInfo Attach() = 0;
+    virtual void Print(int d) const = 0;
 };
 
 class SeqBox : public Box
@@ -37,6 +38,7 @@ public:
     SeqBox();
     
     AttachInfo Attach() override;
+    void Print(int d) const override;
 };
 
 class SimpleBox : public Box
@@ -52,6 +54,7 @@ public:
     SimpleBox(const std::string &content);
   
     AttachInfo Attach() override;
+    void Print(int d) const override;
 };
 
 class IfBox : public Box
@@ -73,6 +76,7 @@ public:
     IfBox(const std::string &content, Box *const thent, Box *const elsee);
   
     AttachInfo Attach() override;
+    void Print(int d) const override;
 };
 
 class WhileBox : public Box
@@ -89,6 +93,7 @@ public:
     WhileBox(const std::string &content, Box *const body);
   
     AttachInfo Attach() override;
+    void Print(int d) const override;
 };
 
 } // namespace BE
