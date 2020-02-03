@@ -1,3 +1,6 @@
+#include <iostream>
+#include <math.h>
+
 #include "box.h"
 
 namespace FC { namespace BE {
@@ -8,9 +11,9 @@ SeqBox::SeqBox() : Box(Box::SEQ) {}
 
 SimpleBox::SimpleBox(const std::string &content) : Box(Box::SIMPLE), content(content) {}
 
-IfBox::IfBox(const std::string &content, Box *const thent) : Box(Box::IF), thent(thent) {}
+IfBox::IfBox(const std::string &content, Box *const thent) : Box(Box::IF), content(content), thent(thent) {}
 
-IfBox::IfBox(const std::string &content, Box *const thent, Box *const elsee) : Box(Box::IF), thent(thent), elsee(elsee) {}
+IfBox::IfBox(const std::string &content, Box *const thent, Box *const elsee) : Box(Box::IF), content(content), thent(thent), elsee(elsee) {}
 
 WhileBox::WhileBox(const std::string &content, Box *const body) : Box(Box::WHILE), content(content), body(body) {}
 
