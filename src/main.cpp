@@ -56,7 +56,7 @@ int main(int argc, char **argv)
     std::unique_ptr<FE::CodeParser> codeParser = std::make_unique<FE::CodeParser>(argInfo.codePath);
     codeParser->scan();
     std::shared_ptr<IR::Stm> tree = codeParser->parse();
-    tree->Print(0);
+    // tree->Print(0);
     std::unique_ptr<BE::ChartEmitter> chartEmitter = std::make_unique<BE::ChartEmitter>(tree);
     chartEmitter->attachChartInfo();
     return 0;
