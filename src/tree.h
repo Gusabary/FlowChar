@@ -3,7 +3,15 @@
 #include <string>
 #include <vector>
 
-namespace FC { namespace IR {
+namespace FC { 
+
+namespace BE {
+
+class Box;
+
+}
+
+namespace IR {
 
 // class SeqStm;
 
@@ -12,13 +20,6 @@ namespace FC { namespace IR {
 // public:
 //     SeqStm *SeqStm;
 // };
-
-struct AttachInfo {
-    int lWidth;
-    int rWidth;
-
-    AttachInfo(int lWidth, int rWidth) : lWidth(lWidth), rWidth(rWidth) {}
-};
 
 class Stm
 {
@@ -34,7 +35,7 @@ public:
     Kind kind;
     Stm(const Kind kind);
     virtual void Print(int d) const = 0;
-    virtual AttachInfo Attach() = 0;
+    virtual BE::Box *Build() = 0;
 };
 
 class SeqStm : public Stm
@@ -46,7 +47,7 @@ public:
     SeqStm(Stm *const stm);
 
     void Print(int d) const override;
-    AttachInfo Attach() override;
+    BE::Box *Build() override;
 
 };
 
@@ -55,15 +56,10 @@ class SimpleStm : public Stm
 public:
     std::string sstm;
 
-    int lWidth;  // width of left side of axis
-    int rWidth;  // width of right side of axis
-    std::pair<int, int> pos;
-    int width;  // width of the stm box, must be odd
-
     SimpleStm(const std::string &sstm);
 
     void Print(int d) const override;
-    AttachInfo Attach() override;
+    BE::Box *Build() override;
 
 };
 
@@ -74,19 +70,11 @@ public:
     Stm *thent;
     Stm *elsee;
 
-    bool hasElse;
-    bool nSide;  // if true, 'no' branch is at left side. make sense without else branch
-    int lWidth;  // width of left side of axis
-    int rWidth;  // width of right side of axis
-    std::pair<int, int> pos;
-    int width;  // width of the cond box, must be odd
-    int axisDistance;  // distance between side axis and center one. make sense with else branch
-
     IfStm(const std::string &cond, Stm *const thent);
     IfStm(const std::string &cond, Stm *const thent, Stm *const elsee);
 
     void Print(int d) const override;
-    AttachInfo Attach() override;
+    BE::Box *Build() override;
 
 };
 
@@ -96,15 +84,10 @@ public:
     std::string cond;
     Stm *body;
 
-    int lWidth;  // width of left side of axis
-    int rWidth;  // width of right side of axis
-    std::pair<int, int> pos;
-    int width;  // width of the cond box, must be odd
-
     WhileStm(const std::string &cond, Stm *const body);
 
     void Print(int d) const override;
-    AttachInfo Attach() override;
+    BE::Box *Build() override;
 
 };
 

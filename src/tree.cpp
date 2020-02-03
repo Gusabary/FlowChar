@@ -2,6 +2,7 @@
 #include <algorithm>
 
 #include "tree.h"
+#include "box.h"
 
 namespace FC { namespace IR {
 
@@ -21,68 +22,27 @@ SeqStm::SeqStm(Stm *const stm) : Stm(Stm::SEQ) {
     this->seq.push_back(stm);
 }
 
-AttachInfo SeqStm::Attach() {
-    int maxLWidth = 0;
-    int maxRWidth = 0;
+BE::Box *SeqStm::Build() {
+    BE::Box *seqBox = new BE::SeqBox();
     for (Stm *stm : this->seq) {
-        AttachInfo ainfo = stm->Attach();
-        maxLWidth = std::max(maxLWidth, ainfo.lWidth);
-        maxRWidth = std::max(maxRWidth, ainfo.rWidth);
+        ((BE::SeqBox *)seqBox)->seq.push_back(stm->Build());
     }
-    return AttachInfo(maxLWidth, maxRWidth);
+    return seqBox;
 }
 
-AttachInfo SimpleStm::Attach() {
-    const int length = this->sstm.size();
-    this->width = length + ((length % 2 == 0) ? 9 : 8);
-    this->lWidth = (this->width - 1) / 2;
-    this->rWidth = (this->width - 1) / 2;
-
-    return AttachInfo(this->lWidth, this->rWidth);
+BE::Box *SimpleStm::Build() {
+    return new BE::SimpleBox(this->sstm);
 }
 
-AttachInfo IfStm::Attach() {
-    const int length = this->cond.size();
-    this->width = length + ((length % 2 == 0) ? 9 : 8);
-
+BE::Box *IfStm::Build() {
     if (!this->elsee) {
-        // only one side
-        this->hasElse = false;
-        AttachInfo ainfo = this->thent->Attach();
-        
-        // if left side is shorter, arrange 'no' branch at left to make flowchart more balanced
-        this->nSide = (ainfo.lWidth < ainfo.rWidth);
-        this->lWidth = std::max((this->width - 1) / 2, ainfo.lWidth) + (this->nSide ? 4 : 0);
-        this->rWidth = std::max((this->width - 1) / 2, ainfo.rWidth) + (this->nSide ? 0 : 4);
+        return new BE::IfBox(this->cond, this->thent->Build());
     }
-    else {
-        // both sides
-        this->hasElse = true;
-        
-        // 'yes' branch is at left side and 'no' branch is at right one
-        AttachInfo lainfo = this->thent->Attach();
-        AttachInfo rainfo = this->elsee->Attach();
-
-        // fixed width of branch shoulder
-        int minAxisDistance = 4 + (this->width - 1) / 2;
-        // fixed distance between both branches
-        int actualAxisDistance = (lainfo.rWidth + rainfo.lWidth + 3) / 2;
-        this->axisDistance = std::max(actualAxisDistance, minAxisDistance);
-
-        this->lWidth = this->axisDistance + lainfo.lWidth;
-        this->rWidth = this->axisDistance + rainfo.rWidth;
-    }
-    return AttachInfo(this->lWidth, this->rWidth);
+    return new BE::IfBox(this->cond, this->thent->Build(), this->elsee->Build());
 }
 
-AttachInfo WhileStm::Attach() {
-    const int length = this->cond.size();
-    this->width = length + ((length % 2 == 0) ? 9 : 8);
-    AttachInfo ainfo = this->body->Attach();
-    this->lWidth = std::max((this->width - 1) / 2, ainfo.lWidth) + 4;
-    this->rWidth = std::max((this->width - 1) / 2, ainfo.rWidth) + 4;
-
-    return AttachInfo(this->lWidth, this->rWidth);
+BE::Box *WhileStm::Build() {
+    return new BE::WhileBox(this->cond, this->body->Build());
 }
 
 void SeqStm::Print(int d) const {
