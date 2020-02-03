@@ -71,6 +71,7 @@ public:
     std::pair<int, int> pos;
     int width;  // width of the cond box, must be odd
     int axisDistance;  // distance between side axis and center one. make sense with else branch
+    bool hasNext;  // if true, can point to a box eventually, otherwise point to 'O'
 
     IfBox(const std::string &content, Box *const thent);
     IfBox(const std::string &content, Box *const thent, Box *const elsee);
@@ -89,6 +90,7 @@ public:
     int rWidth;  // width of right side of axis
     std::pair<int, int> pos;
     int width;  // width of the cond box, must be odd
+    bool hasNext;  // if true, can point to a box eventually, otherwise point to 'O'
 
     WhileBox(const std::string &content, Box *const body);
   

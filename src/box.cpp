@@ -1,5 +1,6 @@
 #include <iostream>
 #include <math.h>
+#include <cassert>
 
 #include "box.h"
 
@@ -11,19 +12,51 @@ SeqBox::SeqBox() : Box(Box::SEQ) {}
 
 SimpleBox::SimpleBox(const std::string &content) : Box(Box::SIMPLE), content(content) {}
 
-IfBox::IfBox(const std::string &content, Box *const thent) : Box(Box::IF), content(content), thent(thent) {}
+IfBox::IfBox(const std::string &content, Box *const thent) : Box(Box::IF), content(content), thent(thent), hasNext(false) {}
 
-IfBox::IfBox(const std::string &content, Box *const thent, Box *const elsee) : Box(Box::IF), content(content), thent(thent), elsee(elsee) {}
+IfBox::IfBox(const std::string &content, Box *const thent, Box *const elsee) : Box(Box::IF), content(content), thent(thent), elsee(elsee), hasNext(false) {}
 
-WhileBox::WhileBox(const std::string &content, Box *const body) : Box(Box::WHILE), content(content), body(body) {}
+WhileBox::WhileBox(const std::string &content, Box *const body) : Box(Box::WHILE), content(content), body(body), hasNext(false) {}
 
 AttachInfo SeqBox::Attach() {
     int maxLWidth = 0;
     int maxRWidth = 0;
-    for (Box *box : this->seq) {
-        AttachInfo ainfo = box->Attach();
+    // for (Box *box : this->seq) {
+    for (int i = 0; i < this->seq.size(); i++) {
+        AttachInfo ainfo = this->seq[i]->Attach();
         maxLWidth = std::max(maxLWidth, ainfo.lWidth);
         maxRWidth = std::max(maxRWidth, ainfo.rWidth);
+
+        // determine whether the if box points to a simple box or 'O' eventually
+        if (i > 0 && this->seq[i-1]->kind == Box::IF && this->seq[i]->kind == Box::SIMPLE) {
+            IfBox *ifBox = ((IfBox *)(this->seq[i - 1]));
+            SimpleBox *simpleBox = ((SimpleBox *)(this->seq[i]));
+            ifBox->hasNext = true;
+
+            // update width info if necessary
+            if (!ifBox->hasElse) {
+                if (ifBox->nSide)
+                    ifBox->lWidth = std::max(ifBox->lWidth - 4, simpleBox->lWidth) + 4;
+                else
+                    ifBox->rWidth = std::max(ifBox->rWidth - 4, simpleBox->rWidth) + 4;
+            }
+            else {
+                assert(simpleBox->lWidth == simpleBox->rWidth);
+                int oldAxisDtstance = ifBox->axisDistance;
+                ifBox->axisDistance = std::max(oldAxisDtstance, simpleBox->lWidth + 3);
+                ifBox->lWidth += (ifBox->axisDistance - oldAxisDtstance);
+                ifBox->rWidth += (ifBox->axisDistance - oldAxisDtstance);
+            }
+        }
+        // determine whether the while box points to a simple box or 'O' eventually
+        else if (i > 0 && this->seq[i-1]->kind == Box::WHILE && this->seq[i]->kind == Box::SIMPLE) {
+            WhileBox *whileBox = ((WhileBox *)(this->seq[i - 1]));
+            SimpleBox *simpleBox = ((SimpleBox *)(this->seq[i]));
+            whileBox->hasNext = true;
+            
+            // update width info if necessary
+            whileBox->lWidth = std::max(whileBox->lWidth - 4, simpleBox->lWidth) + 4;
+        }
     }
     return AttachInfo(maxLWidth, maxRWidth);
 }
