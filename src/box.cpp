@@ -56,14 +56,14 @@ AttachInfo IfBox::Attach() {
         AttachInfo lainfo = this->thent->Attach();
         AttachInfo rainfo = this->elsee->Attach();
 
-        // fixed width of branch shoulder
-        int minAxisDistance = 4 + (this->width - 1) / 2;
-        // fixed distance between both branches
-        int actualAxisDistance = (lainfo.rWidth + rainfo.lWidth + 3) / 2;
+        // fixed width of branch shoulder, must be int
+        int minAxisDistance = (3 + this->width + 3 - 1) / 2;
+        // fixed distance between both branches, may be float
+        int actualAxisDistance = ceil((lainfo.rWidth + 3 + rainfo.lWidth - 1) / 2.0);
         this->axisDistance = std::max(actualAxisDistance, minAxisDistance);
 
-        this->lWidth = this->axisDistance + lainfo.lWidth;
-        this->rWidth = this->axisDistance + rainfo.rWidth;
+        this->lWidth = this->axisDistance + lainfo.lWidth + 1;
+        this->rWidth = this->axisDistance + rainfo.rWidth + 1;
     }
     return AttachInfo(this->lWidth, this->rWidth);
 }
