@@ -9,8 +9,9 @@ namespace FC { namespace BE {
 struct AttachInfo {
     int lWidth;
     int rWidth;
+    int height;
 
-    AttachInfo(int lWidth, int rWidth) : lWidth(lWidth), rWidth(rWidth) {}
+    AttachInfo(int lWidth, int rWidth, int height) : lWidth(lWidth), rWidth(rWidth), height(height) {}
 };
 
 class Box

@@ -21,7 +21,8 @@ WhileBox::WhileBox(const std::string &content, Box *const body) : Box(Box::WHILE
 AttachInfo SeqBox::Attach() {
     int maxLWidth = 0;
     int maxRWidth = 0;
-    // for (Box *box : this->seq) {
+    int height = 0;
+
     for (int i = 0; i < this->seq.size(); i++) {
         AttachInfo ainfo = this->seq[i]->Attach();
         maxLWidth = std::max(maxLWidth, ainfo.lWidth);
@@ -57,8 +58,21 @@ AttachInfo SeqBox::Attach() {
             // update width info if necessary
             whileBox->lWidth = std::max(whileBox->lWidth - 4, simpleBox->lWidth) + 4;
         }
+
+        height += (ainfo.height + 2);
     }
-    return AttachInfo(maxLWidth, maxRWidth);
+
+    // if point to 'O' eventually, height would be larger
+    for (Box *box : this->seq) {
+        if ((box->kind == Box::IF && !((IfBox *)(box))->hasNext && !((IfBox *)(box))->hasElse) || 
+         (box->kind == Box::WHILE && !((WhileBox *)(box))->hasNext)) {
+            height += 3;
+        }
+        else if (box->kind == Box::IF && !((IfBox *)(box))->hasNext && ((IfBox *)(box))->hasElse) {
+            height += 2;
+        }
+    }
+    return AttachInfo(maxLWidth, maxRWidth, height - 2);
 }
 
 AttachInfo SimpleBox::Attach() {
@@ -67,12 +81,13 @@ AttachInfo SimpleBox::Attach() {
     this->lWidth = (this->width - 1) / 2;
     this->rWidth = (this->width - 1) / 2;
 
-    return AttachInfo(this->lWidth, this->rWidth);
+    return AttachInfo(this->lWidth, this->rWidth, 3);
 }
 
 AttachInfo IfBox::Attach() {
     const int length = this->content.size();
     this->width = length + ((length % 2 == 0) ? 9 : 8);
+    int height;
 
     if (!this->elsee) {
         // only one side
@@ -83,6 +98,7 @@ AttachInfo IfBox::Attach() {
         this->nSide = (ainfo.lWidth < ainfo.rWidth);
         this->lWidth = std::max((this->width - 1) / 2, ainfo.lWidth) + (this->nSide ? 4 : 0);
         this->rWidth = std::max((this->width - 1) / 2, ainfo.rWidth) + (this->nSide ? 0 : 4);
+        height = ainfo.height;
     }
     else {
         // both sides
@@ -100,8 +116,9 @@ AttachInfo IfBox::Attach() {
 
         this->lWidth = this->axisDistance + lainfo.lWidth + 1;
         this->rWidth = this->axisDistance + rainfo.rWidth + 1;
+        height = std::max(lainfo.height, rainfo.height);
     }
-    return AttachInfo(this->lWidth, this->rWidth);
+    return AttachInfo(this->lWidth, this->rWidth, height + 5);
 }
 
 AttachInfo WhileBox::Attach() {
@@ -111,7 +128,7 @@ AttachInfo WhileBox::Attach() {
     this->lWidth = std::max((this->width - 1) / 2, ainfo.lWidth) + 4;
     this->rWidth = std::max((this->width - 1) / 2, ainfo.rWidth) + 4;
 
-    return AttachInfo(this->lWidth, this->rWidth);
+    return AttachInfo(this->lWidth, this->rWidth, ainfo.height + 5);
 }
 
 
