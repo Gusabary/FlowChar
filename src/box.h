@@ -100,6 +100,7 @@ public:
     Box *body;
 
     bool hasNext;  // if true, can point to a box eventually, otherwise point to 'O'
+    bool needExtraO;  // if true, backward arrow should start from an extra 'O'
 
     WhileBox(const std::string &content, Box *const body);
   

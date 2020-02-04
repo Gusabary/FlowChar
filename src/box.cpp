@@ -33,6 +33,8 @@ AttachInfo SeqBox::Attach() {
             IfBox *ifBox = ((IfBox *)(this->seq[i - 1]));
             SimpleBox *simpleBox = ((SimpleBox *)(this->seq[i]));
             ifBox->hasNext = true;
+            ifBox->height -= ((ifBox->hasElse) ? 2 : 3);
+            ainfo.height -= ((ifBox->hasElse) ? 2 : 3);
 
             // update width info if necessary
             if (!ifBox->hasElse) {
@@ -54,23 +56,14 @@ AttachInfo SeqBox::Attach() {
             WhileBox *whileBox = ((WhileBox *)(this->seq[i - 1]));
             SimpleBox *simpleBox = ((SimpleBox *)(this->seq[i]));
             whileBox->hasNext = true;
-            
+            whileBox->height -= 3;
+            ainfo.height -= 3;
+
             // update width info if necessary
             whileBox->lWidth = std::max(whileBox->lWidth - 4, simpleBox->lWidth) + 4;
         }
 
         height += (ainfo.height + 2);
-    }
-
-    // if point to 'O' eventually, height would be larger
-    for (Box *box : this->seq) {
-        if ((box->kind == Box::IF && !((IfBox *)(box))->hasNext && !((IfBox *)(box))->hasElse) || 
-         (box->kind == Box::WHILE && !((WhileBox *)(box))->hasNext)) {
-            height += 3;
-        }
-        else if (box->kind == Box::IF && !((IfBox *)(box))->hasNext && ((IfBox *)(box))->hasElse) {
-            height += 2;
-        }
     }
 
     this->lWidth = maxLWidth;
@@ -102,7 +95,7 @@ AttachInfo IfBox::Attach() {
         this->nSide = (ainfo.lWidth < ainfo.rWidth);
         this->lWidth = std::max((this->width - 1) / 2, ainfo.lWidth) + (this->nSide ? 4 : 0);
         this->rWidth = std::max((this->width - 1) / 2, ainfo.rWidth) + (this->nSide ? 0 : 4);
-        this->height = ainfo.height + 5;
+        this->height = ainfo.height + 5 + 3;
     }
     else {
         // both sides
@@ -120,7 +113,7 @@ AttachInfo IfBox::Attach() {
 
         this->lWidth = this->axisDistance + lainfo.lWidth + 1;
         this->rWidth = this->axisDistance + rainfo.rWidth + 1;
-        this->height = std::max(lainfo.height, rainfo.height) + 5;
+        this->height = std::max(lainfo.height, rainfo.height) + 5 + 2;
     }
     return AttachInfo(this->lWidth, this->rWidth, this->height);
 }
@@ -131,7 +124,19 @@ AttachInfo WhileBox::Attach() {
     AttachInfo ainfo = this->body->Attach();
     this->lWidth = std::max((this->width - 1) / 2, ainfo.lWidth) + 4;
     this->rWidth = std::max((this->width - 1) / 2, ainfo.rWidth) + 4;
-    this->height = ainfo.height + 5;
+    this->height = ainfo.height + 5 + 3;
+
+    std::vector<Box *> seq = ((SeqBox *)(this->body))->seq;
+    int size = seq.size();
+    if ((size == 1 && seq[0]->kind == Box::SIMPLE) ||
+        (size > 1 && seq[size - 1]->kind == Box::SIMPLE && seq[size - 2]->kind == Box::SIMPLE) ||
+        (size > 1 && seq[size - 1]->kind == Box::SIMPLE && seq[size - 2]->kind == Box::IF && ((IfBox *)(seq[size - 2]))->nSide)) {
+        this->needExtraO = false;
+    }
+    else {
+        this->needExtraO = true;
+        this->height += 3;
+    }
 
     return AttachInfo(this->lWidth, this->rWidth, this->height);
 }
@@ -349,11 +354,39 @@ DrawInfo IfBox::Draw(chartT &chart, const posT &pos) {
 }
 
 DrawInfo WhileBox::Draw(chartT &chart, const posT &pos) {
+    // border
+    int halfWidth = (this->width - 1) / 2;
+    chart[pos.first - 1][pos.second - halfWidth] = '/';
+    chart[pos.first - 1][pos.second + halfWidth] = '\\';
+    chart[pos.first][pos.second - halfWidth] = '|';
+    chart[pos.first][pos.second + halfWidth] = '|';
+    chart[pos.first + 1][pos.second - halfWidth] = '\\';
+    chart[pos.first + 1][pos.second + halfWidth] = '/';
+    for (int i = pos.second - halfWidth + 1; i < pos.second + halfWidth; i++) {
+        chart[pos.first - 1][i] = '-';
+        chart[pos.first + 1][i] = '-';
+    }
+
+    // content
+    int length = this->content.size();
+    int start = pos.second - (length - 1) / 2;
+    for (int i = start; i < start + length; i++) {
+        chart[pos.first][i] = this->content[i - start];
+    }
+
+    // loop
+    drawArrow(chart, std::make_pair(pos.first + 2, pos.second), std::make_pair(pos.first + 3, pos.second));  // vertical
+    chart[pos.first + 2][pos.second + 2] = 'Y';
+
+    DrawInfo dinfo = this->body->Draw(chart, std::make_pair(pos.first + 5, pos.second));
+
 
 }
 
 void SeqBox::Print(int d) const {
-    for (Box *box : this->seq) {
+    std::cout << "---H: " << this->height << std::endl;
+    for (Box *box : this->seq)
+    {
         box->Print(d);
     }
 }
@@ -368,7 +401,8 @@ void SimpleBox::Print(int d) const {
     indentHelper(2 * d);
     std::cout << this->content << "  (W: " << this->width
      << ", L: " << this->lWidth
-     << ", R: " << this->rWidth << ")" << std::endl;
+     << ", R: " << this->rWidth 
+     << ", H: " << this->height << ")" << std::endl;
 }
 
 void IfBox::Print(int d) const {
@@ -376,6 +410,7 @@ void IfBox::Print(int d) const {
     std::cout << "if " << this->content << "  (W: " << this->width
      << ", L: " << this->lWidth
      << ", R: " << this->rWidth 
+     << ", H: " << this->height
      << ", AD: " << this->axisDistance << ")" << std::endl;
     this->thent->Print(d + 1);
     if (this->elsee) {
@@ -389,7 +424,8 @@ void WhileBox::Print(int d) const {
     indentHelper(2 * d);
     std::cout << "while " << this->content << "  (W: " << this->width
      << ", L: " << this->lWidth
-     << ", R: " << this->rWidth << ")" << std::endl;
+     << ", R: " << this->rWidth 
+     << ", H: " << this->height << ")" << std::endl;
     this->body->Print(d + 1);
 }
 
