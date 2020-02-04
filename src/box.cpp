@@ -415,6 +415,7 @@ DrawInfo WhileBox::Draw(chartT &chart, const posT &pos) {
     }
     else {
         const posT OPos = std::make_pair(pos.first + this->height - 2, pos.second);
+        chart[arrowAFrom.first - 1][arrowAFrom.second - 1] = 'N';
         drawArrow(chart, arrowAFrom, std::make_pair(OPos.first, OPos.second - 1), pos.second - this->lWidth);
         chart[OPos.first][OPos.second] = 'O';
         return DrawInfo(this->height + 2);
