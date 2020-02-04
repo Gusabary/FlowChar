@@ -12,12 +12,12 @@ class ChartEmitter
 private:
     std::shared_ptr<IR::Stm> tree;
     std::unique_ptr<Box> boxes;
-    int chartWidth;
-    std::vector<std::vector<char>> flowchart;
+    chartT flowchart;
+    posT start;
 
 public:
     ChartEmitter(std::shared_ptr<IR::Stm> tree);
     void attachChartInfo();
-    // void draw();
+    void drawFlowChart();
 };
 }}

@@ -59,5 +59,6 @@ int main(int argc, char **argv)
     // tree->Print(0);
     std::unique_ptr<BE::ChartEmitter> chartEmitter = std::make_unique<BE::ChartEmitter>(tree);
     chartEmitter->attachChartInfo();
+    chartEmitter->drawFlowChart();
     return 0;
 }
