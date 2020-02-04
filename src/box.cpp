@@ -162,7 +162,7 @@ static void drawArrow(chartT &chart, const posT &from, const posT &to, const int
         for (int i = std::min(from.second, vertical); i <= std::max(from.second, vertical); i++)
             chart[from.first][i] = '-';
         chart[from.first][vertical] = '+';
-        for (int i = from.first; i < to.first; i++)
+        for (int i = from.first + 1; i < to.first; i++)
             chart[i][vertical] = '|';
         chart[to.first][to.second] = 'V';
         return;
@@ -181,13 +181,25 @@ static void drawArrow(chartT &chart, const posT &from, const posT &to, const int
     return;
 }
 
+static void printHelper(chartT &chart) {
+    for (std::vector<char> row : chart) {
+        for (char c : row) {
+            std::cout << c;
+        }
+        std::cout << std::endl;
+    }
+    std::cout << "-------------------------------------" << std::endl << std::endl;
+}
+
 DrawInfo SeqBox::Draw(chartT &chart, const posT &pos) {
     int row = pos.first;
     const int col = pos.second;
     for (int i = 0; i < this->seq.size(); i++)
     {
+        printHelper(chart);
         DrawInfo dinfo = this->seq[i]->Draw(chart, std::make_pair(row, col));
         row += dinfo.height;
+        // printHelper(chart);
 
         if (i == this->seq.size() - 1)
             return dinfo;
@@ -282,11 +294,58 @@ DrawInfo SimpleBox::Draw(chartT &chart, const posT &pos) {
         chart[pos.first][i] = this->content[i - start];
     }
 
-    return DrawInfo(5, std::make_pair(pos.first + 2, pos.second));
+    return DrawInfo(this->height + 2, std::make_pair(pos.first + 2, pos.second));
 }
 
 DrawInfo IfBox::Draw(chartT &chart, const posT &pos) {
+    // border
+    int halfWidth = (this->width - 1) / 2;
+    chart[pos.first - 1][pos.second - halfWidth] = '/';
+    chart[pos.first - 1][pos.second + halfWidth] = '\\';
+    chart[pos.first][pos.second - halfWidth] = '|';
+    chart[pos.first][pos.second + halfWidth] = '|';
+    chart[pos.first + 1][pos.second - halfWidth] = '\\';
+    chart[pos.first + 1][pos.second + halfWidth] = '/';
+    for (int i = pos.second - halfWidth + 1; i < pos.second + halfWidth; i++) {
+        chart[pos.first - 1][i] = '-';
+        chart[pos.first + 1][i] = '-';
+    }
 
+    // content
+    int length = this->content.size();
+    int start = pos.second - (length - 1) / 2;
+    for (int i = start; i < start + length; i++) {
+        chart[pos.first][i] = this->content[i - start];
+    }
+
+    // branch
+    if (!this->hasElse) {
+        drawArrow(chart, std::make_pair(pos.first + 2, pos.second), std::make_pair(pos.first + 3, pos.second));  // vertical
+        chart[pos.first + 2][pos.second + 2] = 'Y';
+
+        DrawInfo dinfo = this->thent->Draw(chart, std::make_pair(pos.first + 5, pos.second));
+
+        const posT arrowAFrom = std::make_pair(pos.first + this->thent->height + 4, pos.second);
+        const int arrowBFromY = (this->nSide) ? (pos.second - (this->width - 1) / 2 - 1) : (pos.second + (this->width - 1) / 2 + 1);
+        const posT arrowBFrom = std::make_pair(pos.first, arrowBFromY);
+        return DrawInfo(this->height + ((this->hasNext) ? 2 : 5), arrowAFrom, arrowBFrom);
+    }
+    else {
+        int leftAxis = pos.second - this->axisDistance - 1;
+        int rightAxis = pos.second + this->axisDistance + 1;
+        int halfWidth = (this->width - 1) / 2;
+        drawArrow(chart, std::make_pair(pos.first, pos.second - halfWidth - 1), std::make_pair(pos.first + 3, leftAxis), leftAxis);
+        chart[pos.first - 1][pos.second - halfWidth - 2] = 'Y';
+        drawArrow(chart, std::make_pair(pos.first, pos.second + halfWidth + 1), std::make_pair(pos.first + 3, rightAxis), rightAxis);
+        chart[pos.first - 1][pos.second + halfWidth + 2] = 'N';
+
+        this->thent->Draw(chart, std::make_pair(pos.first + 5, leftAxis));
+        this->elsee->Draw(chart, std::make_pair(pos.first + 5, rightAxis));
+
+        const posT arrowAFrom = std::make_pair(pos.first + this->thent->height + 4, leftAxis);
+        const posT arrowBFrom = std::make_pair(pos.first + this->elsee->height + 4, rightAxis);
+        return DrawInfo(this->height + ((this->hasNext) ? 2 : 4), arrowAFrom, arrowBFrom);
+    }
 }
 
 DrawInfo WhileBox::Draw(chartT &chart, const posT &pos) {
