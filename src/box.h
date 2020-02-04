@@ -19,9 +19,11 @@ using chartT = std::vector<std::vector<char>>;
 
 struct DrawInfo {
     int height;
-    posT arrowAFrom;
-    posT arrowBFrom;  // make sense only to if-box and while-box
+    posT arrowAFrom;  // make sense only to if-box without else branch and while-box
+    posT arrowBFrom;  // make sense only to if-box with else branch
 
+    DrawInfo() {}
+    DrawInfo(int height) : height(height) {}
     DrawInfo(int height, posT arrowAFrom) : height(height), arrowAFrom(arrowAFrom) {}
     DrawInfo(int height, posT arrowAFrom, posT arrowBFrom) : height(height), arrowAFrom(arrowAFrom), arrowBFrom(arrowBFrom) {}
 };

@@ -207,70 +207,46 @@ DrawInfo SeqBox::Draw(chartT &chart, const posT &pos) {
         // printHelper(chart);
 
         if (i == this->seq.size() - 1)
-            return dinfo;
+            return DrawInfo();  // return value from SeqBox::Draw doesn't make sense
 
         // draw arrow
         if (this->seq[i]->kind == Box::SIMPLE) {
-            drawArrow(chart, dinfo.arrowAFrom, std::make_pair(row - 2, col));
+            drawArrow(chart, std::make_pair(row - 3, col), std::make_pair(row - 2, col));
         }
         else if (this->seq[i]->kind == Box::IF) {
             IfBox *ifBox = (IfBox *)(this->seq[i]);
+            if (!ifBox->hasNext) {
+                drawArrow(chart, std::make_pair(row - 3, col), std::make_pair(row - 2, col));
+                continue;
+            }
+            assert(this->seq[i + 1]->kind == Box::SIMPLE);
+            const int nextHalfWidth = (this->seq[i + 1]->width - 1) / 2;
             if (!ifBox->hasElse) {
-                if (ifBox->hasNext) {
-                    drawArrow(chart, dinfo.arrowAFrom, std::make_pair(row - 2, col));  // vertical arrow
-                    int nextHalfWidth = (this->seq[i + 1]->width - 1) / 2;
-                    if (ifBox->nSide) {
-                        chart[dinfo.arrowBFrom.first - 1][dinfo.arrowBFrom.second - 1] = 'N';
-                        drawArrow(chart, dinfo.arrowBFrom, std::make_pair(row, col - nextHalfWidth - 1), col - this->seq[i]->lWidth);
-                    }
-                    else {
-                        chart[dinfo.arrowBFrom.first - 1][dinfo.arrowBFrom.second + 1] = 'N';
-                        drawArrow(chart, dinfo.arrowBFrom, std::make_pair(row, col + nextHalfWidth + 1), col + this->seq[i]->rWidth);
-                    }
+                drawArrow(chart, std::make_pair(row - 3, col), std::make_pair(row - 2, col));  // vertical arrow
+                if (ifBox->nSide) {
+                    drawArrow(chart, dinfo.arrowAFrom, std::make_pair(row, col - nextHalfWidth - 1), col - this->seq[i]->lWidth);
+                    chart[dinfo.arrowAFrom.first - 1][dinfo.arrowAFrom.second - 1] = 'N';
                 }
                 else {
-                    drawArrow(chart, dinfo.arrowAFrom, std::make_pair(row - 5, col));  // vertical arrow
-                    chart[row - 4][col] = 'O';
-                    if (ifBox->nSide) {
-                        chart[dinfo.arrowBFrom.first - 1][dinfo.arrowBFrom.second - 1] = 'N';
-                        drawArrow(chart, dinfo.arrowBFrom, std::make_pair(row - 4, col - 1), col - this->seq[i]->lWidth);
-                    }
-                    else {
-                        chart[dinfo.arrowBFrom.first - 1][dinfo.arrowBFrom.second + 1] = 'N';
-                        drawArrow(chart, dinfo.arrowBFrom, std::make_pair(row - 4, col + 1), col + this->seq[i]->rWidth);
-                    }
-                    drawArrow(chart, std::make_pair(row - 3, col), std::make_pair(row - 2, col)); // vertical arrow
+                    drawArrow(chart, dinfo.arrowAFrom, std::make_pair(row, col + nextHalfWidth + 1), col + this->seq[i]->rWidth);
+                    chart[dinfo.arrowAFrom.first - 1][dinfo.arrowAFrom.second + 1] = 'N';
                 }
             }
             else {
-                if (ifBox->hasNext) {
-                    int nextHalfWidth = (this->seq[i + 1]->width - 1) / 2;
-                    drawArrow(chart, dinfo.arrowAFrom, std::make_pair(row, col - nextHalfWidth - 1), dinfo.arrowAFrom.second);
-                    drawArrow(chart, dinfo.arrowBFrom, std::make_pair(row, col + nextHalfWidth + 1), dinfo.arrowBFrom.second);
-                }
-                else {
-                    drawArrow(chart, dinfo.arrowAFrom, std::make_pair(row - 4, col - 1), dinfo.arrowAFrom.second);
-                    drawArrow(chart, dinfo.arrowBFrom, std::make_pair(row - 4, col + 1), dinfo.arrowBFrom.second);
-                    chart[row - 4][col] = 'O';
-                    drawArrow(chart, std::make_pair(row - 3, col), std::make_pair(row - 2, col)); // vertical arrow
-                }
+                drawArrow(chart, dinfo.arrowAFrom, std::make_pair(row, col - nextHalfWidth - 1), dinfo.arrowAFrom.second);
+                drawArrow(chart, dinfo.arrowBFrom, std::make_pair(row, col + nextHalfWidth + 1), dinfo.arrowBFrom.second);
             }
         }
         else if (this->seq[i]->kind == Box::WHILE) {
             WhileBox *whileBox = (WhileBox *)(this->seq[i]);
-            if (whileBox->hasNext) {
-                drawArrow(chart, dinfo.arrowAFrom, std::make_pair(row - 2, col)); // vertical arrow
-                int nextHalfWidth = (this->seq[i + 1]->width - 1) / 2;
-                drawArrow(chart, dinfo.arrowBFrom, std::make_pair(row, col - nextHalfWidth - 1), col - this->seq[i]->lWidth);
-                chart[dinfo.arrowBFrom.first - 1][dinfo.arrowBFrom.second - 1] = 'N';
+            if (!whileBox->hasNext) {
+                drawArrow(chart, std::make_pair(row - 3, col), std::make_pair(row - 2, col));
+                continue;
             }
-            else {
-                drawArrow(chart, dinfo.arrowAFrom, std::make_pair(row - 5, col)); // vertical arrow
-                chart[row - 4][col] = 'O';
-                drawArrow(chart, dinfo.arrowBFrom, std::make_pair(row - 4, col - 1), col - this->seq[i]->lWidth);
-                chart[dinfo.arrowBFrom.first - 1][dinfo.arrowBFrom.second - 1] = 'N';
-                drawArrow(chart, std::make_pair(row - 3, col), std::make_pair(row - 2, col)); // vertical arrow
-            }
+            assert(this->seq[i + 1]->kind == Box::SIMPLE);
+            const int nextHalfWidth = (this->seq[i + 1]->width - 1) / 2;
+            drawArrow(chart, dinfo.arrowAFrom, std::make_pair(row, col - nextHalfWidth - 1), col - this->seq[i]->lWidth);
+            chart[dinfo.arrowAFrom.first - 1][dinfo.arrowAFrom.second - 1] = 'N';
         }
         else {
             assert(0);
@@ -299,7 +275,7 @@ DrawInfo SimpleBox::Draw(chartT &chart, const posT &pos) {
         chart[pos.first][i] = this->content[i - start];
     }
 
-    return DrawInfo(this->height + 2, std::make_pair(pos.first + 2, pos.second));
+    return DrawInfo(this->height + 2);
 }
 
 DrawInfo IfBox::Draw(chartT &chart, const posT &pos) {
@@ -328,12 +304,28 @@ DrawInfo IfBox::Draw(chartT &chart, const posT &pos) {
         drawArrow(chart, std::make_pair(pos.first + 2, pos.second), std::make_pair(pos.first + 3, pos.second));  // vertical
         chart[pos.first + 2][pos.second + 2] = 'Y';
 
-        DrawInfo dinfo = this->thent->Draw(chart, std::make_pair(pos.first + 5, pos.second));
+        this->thent->Draw(chart, std::make_pair(pos.first + 5, pos.second));
 
-        const posT arrowAFrom = std::make_pair(pos.first + this->thent->height + 4, pos.second);
-        const int arrowBFromY = (this->nSide) ? (pos.second - (this->width - 1) / 2 - 1) : (pos.second + (this->width - 1) / 2 + 1);
-        const posT arrowBFrom = std::make_pair(pos.first, arrowBFromY);
-        return DrawInfo(this->height + ((this->hasNext) ? 2 : 5), arrowAFrom, arrowBFrom);
+        const int arrowAFromY = (this->nSide) ? (pos.second - (this->width - 1) / 2 - 1) : (pos.second + (this->width - 1) / 2 + 1);
+        const posT arrowAFrom = std::make_pair(pos.first, arrowAFromY);
+
+        if (this->hasNext) {
+            return DrawInfo(this->height + 2, arrowAFrom);
+        }
+        else {
+            const posT OPos = std::make_pair(pos.first + this->height - 2, pos.second);
+            drawArrow(chart, std::make_pair(OPos.first - 2, OPos.second), std::make_pair(OPos.first - 1, OPos.second));  // vertical
+            chart[OPos.first][OPos.second] = 'O';
+            if (this->nSide) {
+                chart[arrowAFrom.first - 1][arrowAFromY - 1] = 'N';
+                drawArrow(chart, arrowAFrom, std::make_pair(OPos.first, OPos.second - 1), pos.second - this->lWidth);
+            }
+            else {
+                chart[arrowAFrom.first - 1][arrowAFromY + 1] = 'N';
+                drawArrow(chart, arrowAFrom, std::make_pair(OPos.first, OPos.second + 1), pos.second + this->rWidth);
+            }
+            return DrawInfo(this->height + 2);
+        }
     }
     else {
         int leftAxis = pos.second - this->axisDistance - 1;
@@ -349,8 +341,19 @@ DrawInfo IfBox::Draw(chartT &chart, const posT &pos) {
 
         const posT arrowAFrom = std::make_pair(pos.first + this->thent->height + 4, leftAxis);
         const posT arrowBFrom = std::make_pair(pos.first + this->elsee->height + 4, rightAxis);
-        return DrawInfo(this->height + ((this->hasNext) ? 2 : 4), arrowAFrom, arrowBFrom);
+
+        if (this->hasNext) {
+            return DrawInfo(this->height + 2, arrowAFrom, arrowBFrom);
+        }
+        else {
+            const posT OPos = std::make_pair(pos.first + this->height - 2, pos.second);
+            drawArrow(chart, arrowAFrom, std::make_pair(OPos.first, OPos.second - 1), leftAxis);
+            drawArrow(chart, arrowBFrom, std::make_pair(OPos.first, OPos.second + 1), rightAxis);
+            chart[OPos.first][OPos.second] = 'O';
+            return DrawInfo(this->height + 2);
+        }
     }
+    assert(0);
 }
 
 DrawInfo WhileBox::Draw(chartT &chart, const posT &pos) {
@@ -374,13 +377,41 @@ DrawInfo WhileBox::Draw(chartT &chart, const posT &pos) {
         chart[pos.first][i] = this->content[i - start];
     }
 
-    // loop
+    // draw yes-branch arrow
     drawArrow(chart, std::make_pair(pos.first + 2, pos.second), std::make_pair(pos.first + 3, pos.second));  // vertical
     chart[pos.first + 2][pos.second + 2] = 'Y';
 
-    DrawInfo dinfo = this->body->Draw(chart, std::make_pair(pos.first + 5, pos.second));
+    // draw loop body
+    this->body->Draw(chart, std::make_pair(pos.first + 5, pos.second));
 
+    // draw backward arrow
+    const posT backArrowTo = std::make_pair(pos.first, pos.second + (this->width - 1) / 2 + 1);
+    if (!this->needExtraO) {
+        Box *lastBox = ((SeqBox *)(this->body))->seq.back();
+        assert(lastBox->kind == Box::SIMPLE);
+        const int lastBoxHalfWidth = (((SimpleBox *)(lastBox))->width - 1) / 2;
+        const posT backArrowFrom = std::make_pair(pos.first + this->height - (this->hasNext ? 3 : 6), pos.second + lastBoxHalfWidth + 1);
+        drawArrow(chart, backArrowFrom, backArrowTo, pos.second + this->rWidth);
+    }
+    else {
+        const posT OPos = std::make_pair(pos.first + this->height - (this->hasNext ? 2 : 5), pos.second);
+        drawArrow(chart, std::make_pair(OPos.first - 2, OPos.second), std::make_pair(OPos.first - 1, OPos.second));  // vertical
+        chart[OPos.first][OPos.second] = 'O';
+        drawArrow(chart, std::make_pair(OPos.first, OPos.second + 1), backArrowTo, pos.second + this->rWidth);
+    }
 
+    // draw no-branch arrow
+    const posT arrowAFrom = std::make_pair(pos.first, pos.second - (this->width - 1) / 2 - 1);
+    if (this->hasNext) {
+        return DrawInfo(this->height + 2, arrowAFrom);
+    }
+    else {
+        const posT OPos = std::make_pair(pos.first + this->height - 2, pos.second);
+        drawArrow(chart, arrowAFrom, std::make_pair(OPos.first, OPos.second - 1), pos.second - this->lWidth);
+        chart[OPos.first][OPos.second] = 'O';
+        return DrawInfo(this->height + 2);
+    }
+    assert(0);
 }
 
 void SeqBox::Print(int d) const {
