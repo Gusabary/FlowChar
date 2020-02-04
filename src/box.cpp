@@ -72,7 +72,11 @@ AttachInfo SeqBox::Attach() {
             height += 2;
         }
     }
-    return AttachInfo(maxLWidth, maxRWidth, height - 2);
+
+    this->lWidth = maxLWidth;
+    this->rWidth = maxRWidth;
+    this->height = height - 2;
+    return AttachInfo(this->lWidth, this->rWidth, this->height);
 }
 
 AttachInfo SimpleBox::Attach() {
@@ -198,18 +202,26 @@ DrawInfo SeqBox::Draw(chartT &chart, const posT &pos) {
                 if (ifBox->hasNext) {
                     drawArrow(chart, dinfo.arrowAFrom, std::make_pair(row - 2, col));  // vertical arrow
                     int nextHalfWidth = (this->seq[i + 1]->width - 1) / 2;
-                    if (ifBox->nSide)
+                    if (ifBox->nSide) {
+                        chart[dinfo.arrowBFrom.first - 1][dinfo.arrowBFrom.second - 1] = 'N';
                         drawArrow(chart, dinfo.arrowBFrom, std::make_pair(row, col - nextHalfWidth - 1), col - this->seq[i]->lWidth);
-                    else
+                    }
+                    else {
+                        chart[dinfo.arrowBFrom.first - 1][dinfo.arrowBFrom.second + 1] = 'N';
                         drawArrow(chart, dinfo.arrowBFrom, std::make_pair(row, col + nextHalfWidth + 1), col + this->seq[i]->rWidth);
+                    }
                 }
                 else {
                     drawArrow(chart, dinfo.arrowAFrom, std::make_pair(row - 5, col));  // vertical arrow
                     chart[row - 4][col] = 'O';
-                    if (ifBox->nSide)
+                    if (ifBox->nSide) {
+                        chart[dinfo.arrowBFrom.first - 1][dinfo.arrowBFrom.second - 1] = 'N';
                         drawArrow(chart, dinfo.arrowBFrom, std::make_pair(row - 4, col - 1), col - this->seq[i]->lWidth);
-                    else
+                    }
+                    else {
+                        chart[dinfo.arrowBFrom.first - 1][dinfo.arrowBFrom.second + 1] = 'N';
                         drawArrow(chart, dinfo.arrowBFrom, std::make_pair(row - 4, col + 1), col + this->seq[i]->rWidth);
+                    }
                     drawArrow(chart, std::make_pair(row - 3, col), std::make_pair(row - 2, col)); // vertical arrow
                 }
             }
@@ -233,11 +245,13 @@ DrawInfo SeqBox::Draw(chartT &chart, const posT &pos) {
                 drawArrow(chart, dinfo.arrowAFrom, std::make_pair(row - 2, col)); // vertical arrow
                 int nextHalfWidth = (this->seq[i + 1]->width - 1) / 2;
                 drawArrow(chart, dinfo.arrowBFrom, std::make_pair(row, col - nextHalfWidth - 1), col - this->seq[i]->lWidth);
+                chart[dinfo.arrowBFrom.first - 1][dinfo.arrowBFrom.second - 1] = 'N';
             }
             else {
                 drawArrow(chart, dinfo.arrowAFrom, std::make_pair(row - 5, col)); // vertical arrow
                 chart[row - 4][col] = 'O';
                 drawArrow(chart, dinfo.arrowBFrom, std::make_pair(row - 4, col - 1), col - this->seq[i]->lWidth);
+                chart[dinfo.arrowBFrom.first - 1][dinfo.arrowBFrom.second - 1] = 'N';
                 drawArrow(chart, std::make_pair(row - 3, col), std::make_pair(row - 2, col)); // vertical arrow
             }
         }
