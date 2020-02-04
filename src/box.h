@@ -41,6 +41,7 @@ public:
     int lWidth;  // width of left side of axis
     int rWidth;  // width of right side of axis
     int width;  // width of the stm box, must be odd
+    int height;
 
     Box(const Kind kind);
     virtual AttachInfo Attach() = 0;

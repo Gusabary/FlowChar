@@ -80,14 +80,14 @@ AttachInfo SimpleBox::Attach() {
     this->width = length + ((length % 2 == 0) ? 9 : 8);
     this->lWidth = (this->width - 1) / 2;
     this->rWidth = (this->width - 1) / 2;
+    this->height = 3;
 
-    return AttachInfo(this->lWidth, this->rWidth, 3);
+    return AttachInfo(this->lWidth, this->rWidth, this->height);
 }
 
 AttachInfo IfBox::Attach() {
     const int length = this->content.size();
     this->width = length + ((length % 2 == 0) ? 9 : 8);
-    int height;
 
     if (!this->elsee) {
         // only one side
@@ -98,7 +98,7 @@ AttachInfo IfBox::Attach() {
         this->nSide = (ainfo.lWidth < ainfo.rWidth);
         this->lWidth = std::max((this->width - 1) / 2, ainfo.lWidth) + (this->nSide ? 4 : 0);
         this->rWidth = std::max((this->width - 1) / 2, ainfo.rWidth) + (this->nSide ? 0 : 4);
-        height = ainfo.height;
+        this->height = ainfo.height + 5;
     }
     else {
         // both sides
@@ -116,9 +116,9 @@ AttachInfo IfBox::Attach() {
 
         this->lWidth = this->axisDistance + lainfo.lWidth + 1;
         this->rWidth = this->axisDistance + rainfo.rWidth + 1;
-        height = std::max(lainfo.height, rainfo.height);
+        this->height = std::max(lainfo.height, rainfo.height) + 5;
     }
-    return AttachInfo(this->lWidth, this->rWidth, height + 5);
+    return AttachInfo(this->lWidth, this->rWidth, this->height);
 }
 
 AttachInfo WhileBox::Attach() {
@@ -127,8 +127,9 @@ AttachInfo WhileBox::Attach() {
     AttachInfo ainfo = this->body->Attach();
     this->lWidth = std::max((this->width - 1) / 2, ainfo.lWidth) + 4;
     this->rWidth = std::max((this->width - 1) / 2, ainfo.rWidth) + 4;
+    this->height = ainfo.height + 5;
 
-    return AttachInfo(this->lWidth, this->rWidth, ainfo.height + 5);
+    return AttachInfo(this->lWidth, this->rWidth, this->height);
 }
 
 static void drawArrow(chartT &chart, const posT &from, const posT &to, const int vertical = -1) {
