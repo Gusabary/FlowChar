@@ -27,14 +27,14 @@ AttachInfo SeqBox::Attach() {
         AttachInfo ainfo = this->seq[i]->Attach();
         maxLWidth = std::max(maxLWidth, ainfo.lWidth);
         maxRWidth = std::max(maxRWidth, ainfo.rWidth);
-
+        
         // determine whether the if box points to a simple box or 'O' eventually
         if (i > 0 && this->seq[i-1]->kind == Box::IF && this->seq[i]->kind == Box::SIMPLE) {
             IfBox *ifBox = ((IfBox *)(this->seq[i - 1]));
             SimpleBox *simpleBox = ((SimpleBox *)(this->seq[i]));
             ifBox->hasNext = true;
             ifBox->height -= ((ifBox->hasElse) ? 2 : 3);
-            ainfo.height -= ((ifBox->hasElse) ? 2 : 3);
+            height -= ((ifBox->hasElse) ? 2 : 3);
 
             // update width info if necessary
             if (!ifBox->hasElse) {
@@ -50,6 +50,9 @@ AttachInfo SeqBox::Attach() {
                 ifBox->lWidth += (ifBox->axisDistance - oldAxisDtstance);
                 ifBox->rWidth += (ifBox->axisDistance - oldAxisDtstance);
             }
+
+            maxLWidth = std::max(maxLWidth, ifBox->lWidth);
+            maxRWidth = std::max(maxRWidth, ifBox->rWidth);
         }
         // determine whether the while box points to a simple box or 'O' eventually
         else if (i > 0 && this->seq[i-1]->kind == Box::WHILE && this->seq[i]->kind == Box::SIMPLE) {
@@ -57,12 +60,17 @@ AttachInfo SeqBox::Attach() {
             SimpleBox *simpleBox = ((SimpleBox *)(this->seq[i]));
             whileBox->hasNext = true;
             whileBox->height -= 3;
-            ainfo.height -= 3;
+            height -= 3;
 
             // update width info if necessary
             whileBox->lWidth = std::max(whileBox->lWidth - 4, simpleBox->lWidth) + 4;
+
+            maxLWidth = std::max(maxLWidth, whileBox->lWidth);
+            maxRWidth = std::max(maxRWidth, whileBox->rWidth);
         }
 
+        maxLWidth = std::max(maxLWidth, ainfo.lWidth);
+        maxRWidth = std::max(maxRWidth, ainfo.rWidth);
         height += (ainfo.height + 2);
     }
 
@@ -201,7 +209,7 @@ DrawInfo SeqBox::Draw(chartT &chart, const posT &pos) {
     const int col = pos.second;
     for (int i = 0; i < this->seq.size(); i++)
     {
-        printHelper(chart);
+        // printHelper(chart);
         DrawInfo dinfo = this->seq[i]->Draw(chart, std::make_pair(row, col));
         row += dinfo.height;
         // printHelper(chart);
