@@ -45,7 +45,6 @@ public:
     Box(const Kind kind);
     virtual AttachInfo Attach() = 0;
     virtual DrawInfo Draw(chartT &chart, const posT &pos) = 0;
-    void drawArrow(const posT &from, const posT &to, const int vertical = -1);
     virtual void Print(int d) const = 0;
 };
 
