@@ -57,7 +57,13 @@ int main(int argc, char **argv)
     codeParser->scan();
     std::shared_ptr<IR::Stm> tree = codeParser->parse();
     // tree->Print(0);
-    std::unique_ptr<BE::ChartEmitter> chartEmitter = std::make_unique<BE::ChartEmitter>(tree);
+    std::unique_ptr<BE::ChartEmitter> chartEmitter;
+    if (!argInfo.doRedirect) {
+        chartEmitter = std::make_unique<BE::ChartEmitter>(tree);
+    }
+    else {
+        chartEmitter = std::make_unique<BE::ChartEmitter>(tree, argInfo.chartPath);
+    }
     chartEmitter->attachChartInfo();
     chartEmitter->drawFlowChart();
     return 0;
