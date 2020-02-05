@@ -19,7 +19,9 @@ struct ArgInfo {
 };
 
 void printHelp() {
-    std::cout << "flowchar - a tiny tool for conversion from pseudo-code to flowchart in character format" << std::endl << std::endl;
+    std::cout << std::endl;
+    std::cout << "flowchar - a tiny tool for conversion from pseudo-code to flowchart in character format" << std::endl
+              << std::endl;
     std::cout << "Usage:" << std::endl;
     std::cout << "\t flowchar -c <codePath> [-o <chartPath>]" << std::endl << std::endl;
     std::cout << "Options:" << std::endl;
