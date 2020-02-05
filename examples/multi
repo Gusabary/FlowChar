@@ -1,0 +1,10 @@
+be born;
+while (alive) {
+    if (happy) {
+        smile;
+    }
+    else {
+        try to be happy;
+    }
+}
+die;

@@ -74,7 +74,7 @@ chmod +x ./build.sh
 然后指定伪代码文件，可选地，可以指定流程图输出文件，缺省的话会打印到标准输出：
 
 ```bash
-./flowchar -c /path/to/code -o /path/to/chart
+./flowchar -c ../examples/simple -o ../examples/simple-chart
 ```
 
 使用 `-h` 选项以打印帮助信息：
@@ -145,6 +145,6 @@ docker run -v /path/to/dir:/app/files gusabary/flowchar:v1.0 -c files/code -o fi
 
 ## 使用许可
 
-MIT
+[MIT](./LICENSE)
 
 ##### Last-modified date: 2020.2.5, 3 p.m.

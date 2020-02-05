@@ -1,0 +1,6 @@
+if (cond) {
+    ok;
+}
+else {
+    no;
+}
