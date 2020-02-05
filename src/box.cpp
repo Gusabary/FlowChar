@@ -435,6 +435,5 @@ void WhileBox::Print(int d) const {
     this->body->Print(d + 1);
 }
 
-}}
-
-
+} // namespace BE
+} // namespace FC

@@ -39,6 +39,5 @@ SeqToken::SeqToken() : Token(Token::SEQ) {}
 
 BeginToken::BeginToken() : Token(Token::BEGIN, 1, std::make_pair<int, int>(0, 0)) {}
 
-
 } // namespace FE
 } // namespace FC

@@ -44,4 +44,6 @@ public:
     parsingTableEntry lookupParsingTable(int cntState, Token::Kind tokenKind, std::pair<int, int> pos);
     reductionInfo getReductionInfo(int productionNum);
 };
-}}
+
+} // namespace FE
+} // namespace FC

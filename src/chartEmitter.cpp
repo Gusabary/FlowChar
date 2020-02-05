@@ -55,4 +55,6 @@ void ChartEmitter::drawFlowChart() {
         fs.close();
     }
 }
-}}
+
+} // namespace BE
+} // namespace FC

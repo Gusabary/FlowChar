@@ -9,17 +9,9 @@ namespace BE {
 
 class Box;
 
-}
+} // namespace BE
 
 namespace IR {
-
-// class SeqStm;
-
-// class Tree
-// {
-// public:
-//     SeqStm *SeqStm;
-// };
 
 class Stm
 {
@@ -90,7 +82,6 @@ public:
     BE::Box *Build() override;
 
 };
-
 
 } // namespace IR
 } // namespace FC

@@ -415,4 +415,6 @@ CodeParser::parsingTableEntry CodeParser::lookupParsingTable(int cntState, Token
     }
     assert(0);
 }
-}}
+
+} // namespace FE
+} // namespace FC

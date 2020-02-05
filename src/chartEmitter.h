@@ -23,4 +23,6 @@ public:
     void attachChartInfo();
     void drawFlowChart();
 };
-}}
+
+} // namespace BE
+} // namespace FC

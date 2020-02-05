@@ -79,4 +79,5 @@ void WhileStm::Print(int d) const {
     this->body->Print(d + 1);
 }
 
-}}
+} // namespace IR
+} // namespace FC
