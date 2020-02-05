@@ -76,6 +76,7 @@ chmod +x ./build.sh
 然后指定伪代码文件，可选地，可以指定流程图输出文件，缺省的话会打印到标准输出：
 
 ```bash
+cd build
 ./flowchar -c ../examples/simple -o ../examples/simple-chart
 ```
 

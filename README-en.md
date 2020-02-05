@@ -70,6 +70,7 @@ chmod +x ./build.sh
 Then execute the binary with pseudo-code file and, optionally, output file specified. If no output file is provided, the emitted flowchart would be printed to stdout:
 
 ```bash
+cd build
 ./flowchar -c ../examples/simple -o ../examples/simple-chart
 ```
 
