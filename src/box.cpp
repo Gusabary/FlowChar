@@ -262,50 +262,34 @@ DrawInfo SeqBox::Draw(chartT &chart, const posT &pos) {
     }
 }
 
-DrawInfo SimpleBox::Draw(chartT &chart, const posT &pos) {
+static void drawSingleBox(chartT &chart, const posT &pos, const int halfWidth, const std::string content, const bool isSimple) {
     // border
-    int halfWidth = (this->width - 1) / 2;
-    chart[pos.first - 1][pos.second - halfWidth] = '+';
-    chart[pos.first - 1][pos.second + halfWidth] = '+';
+    chart[pos.first - 1][pos.second - halfWidth] = isSimple ? '+' : '/';
+    chart[pos.first - 1][pos.second + halfWidth] = isSimple ? '+' : '\\';
     chart[pos.first][pos.second - halfWidth] = '|';
     chart[pos.first][pos.second + halfWidth] = '|';
-    chart[pos.first + 1][pos.second - halfWidth] = '+';
-    chart[pos.first + 1][pos.second + halfWidth] = '+';
+    chart[pos.first + 1][pos.second - halfWidth] = isSimple ? '+' : '\\';
+    chart[pos.first + 1][pos.second + halfWidth] = isSimple ? '+' : '/';
     for (int i = pos.second - halfWidth + 1; i < pos.second + halfWidth; i++) {
         chart[pos.first - 1][i] = '-';
         chart[pos.first + 1][i] = '-';
     }
 
     // content
-    int length = this->content.size();
+    int length = content.size();
     int start = pos.second - (length - 1) / 2;
     for (int i = start; i < start + length; i++) {
-        chart[pos.first][i] = this->content[i - start];
+        chart[pos.first][i] = content[i - start];
     }
+}
 
+DrawInfo SimpleBox::Draw(chartT &chart, const posT &pos) {
+    drawSingleBox(chart, pos, (this->width - 1) / 2, this->content, true);
     return DrawInfo(this->height + 2);
 }
 
 DrawInfo IfBox::Draw(chartT &chart, const posT &pos) {
-    // border
-    int halfWidth = (this->width - 1) / 2;
-    chart[pos.first - 1][pos.second - halfWidth] = '/';
-    chart[pos.first - 1][pos.second + halfWidth] = '\\';
-    chart[pos.first][pos.second - halfWidth] = '|';
-    chart[pos.first][pos.second + halfWidth] = '|';
-    chart[pos.first + 1][pos.second - halfWidth] = '\\';
-    chart[pos.first + 1][pos.second + halfWidth] = '/';
-    for (int i = pos.second - halfWidth + 1; i < pos.second + halfWidth; i++) {
-        chart[pos.first - 1][i] = '-';
-        chart[pos.first + 1][i] = '-';
-    }
-
-    // content
-    int length = this->content.size();
-    int start = pos.second - (length - 1) / 2;
-    for (int i = start; i < start + length; i++) {
-        chart[pos.first][i] = this->content[i - start];
-    }
+    drawSingleBox(chart, pos, (this->width - 1) / 2, this->content, false);
 
     // branch
     if (!this->hasElse) {
@@ -365,25 +349,7 @@ DrawInfo IfBox::Draw(chartT &chart, const posT &pos) {
 }
 
 DrawInfo WhileBox::Draw(chartT &chart, const posT &pos) {
-    // border
-    int halfWidth = (this->width - 1) / 2;
-    chart[pos.first - 1][pos.second - halfWidth] = '/';
-    chart[pos.first - 1][pos.second + halfWidth] = '\\';
-    chart[pos.first][pos.second - halfWidth] = '|';
-    chart[pos.first][pos.second + halfWidth] = '|';
-    chart[pos.first + 1][pos.second - halfWidth] = '\\';
-    chart[pos.first + 1][pos.second + halfWidth] = '/';
-    for (int i = pos.second - halfWidth + 1; i < pos.second + halfWidth; i++) {
-        chart[pos.first - 1][i] = '-';
-        chart[pos.first + 1][i] = '-';
-    }
-
-    // content
-    int length = this->content.size();
-    int start = pos.second - (length - 1) / 2;
-    for (int i = start; i < start + length; i++) {
-        chart[pos.first][i] = this->content[i - start];
-    }
+    drawSingleBox(chart, pos, (this->width - 1) / 2, this->content, false);
 
     // draw yes-branch arrow
     drawArrow(chart, std::make_pair(pos.first + 2, pos.second), std::make_pair(pos.first + 3, pos.second));  // vertical
