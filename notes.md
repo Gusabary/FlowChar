@@ -55,4 +55,15 @@
   a + (b ? c : d)  // 想表达这个意思，应该给三目运算符加括号
   ```
 
-##### Last-modified date: 2020.2.4, 12 p.m.
++ 使用 github package 来推送镜像的时候，需要一个拥有推送权限的 token：
+
+  ```bash
+  # 这一步要输密码，不是 github 账号的密码，而是拥有推送权限的 token
+  docker login docker.pkg.github.com --username Gusabary
+  docker tag fc:v4 docker.pkg.github.com/gusabary/flowchar/flowchar:v1.0
+  docker push docker.pkg.github.com/gusabary/flowchar/flowchar:v1.0
+  ```
+
+  可以去设置中创建一个新的 token，勾选上推送权限。
+
+##### Last-modified date: 2020.2.5, 1 p.m.
