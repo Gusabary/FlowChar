@@ -31,6 +31,7 @@ public:
     static const char semicolon;
     static const char lbrace;
     static const char rbrace;
+    static const char space;
     static const std::string iftoken;
     static const std::string elsetoken;
     static const std::string whiletoken;

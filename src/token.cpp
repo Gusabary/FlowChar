@@ -7,6 +7,7 @@ const char Token::rparen = ')';
 const char Token::semicolon = ';';
 const char Token::lbrace = '{';
 const char Token::rbrace = '}';
+const char Token::space = ' ';
 const std::string Token::iftoken = "if";
 const std::string Token::elsetoken = "else";
 const std::string Token::whiletoken = "while";

@@ -36,7 +36,11 @@ void CodeParser::scan() {
 
         if (Token::delimiters.find(c) != Token::delimiters.end()) {
             // c is a delimiter
-            if (str == Token::iftoken) {
+            // first erase trailing space
+            str.erase(str.find_last_not_of(' ') + 1);
+            
+            if (str == Token::iftoken)
+            {
                 this->tokenList.push_back(new IfToken(cntPos));
             }
             else if (str == Token::elsetoken) {
@@ -68,6 +72,10 @@ void CodeParser::scan() {
         else {
             if (Token::whitespaces.find(c) == Token::whitespaces.end()) {
                 // c is not a whitespace
+                str += c;
+            }
+            else if (c == Token::space && !str.empty()) {
+                // ignore leading space
                 str += c;
             }
         }
