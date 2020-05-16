@@ -16,7 +16,7 @@ namespace IR {
 class Stm
 {
 public:
-    enum Kind
+    enum class Kind : int
     {
         SIMPLE,
         IF,

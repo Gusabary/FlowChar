@@ -8,17 +8,17 @@ namespace FC { namespace IR {
 
 Stm::Stm(const Kind kind) : kind(kind) {}
 
-SimpleStm::SimpleStm(const std::string &sstm) : Stm(Stm::SIMPLE), sstm(sstm) {}
+SimpleStm::SimpleStm(const std::string &sstm) : Stm(Kind::SIMPLE), sstm(sstm) {}
 
-IfStm::IfStm(const std::string &cond, Stm *const thent) : Stm(Stm::IF), cond(cond), thent(thent), elsee(nullptr) {}
+IfStm::IfStm(const std::string &cond, Stm *const thent) : Stm(Kind::IF), cond(cond), thent(thent), elsee(nullptr) {}
 
-IfStm::IfStm(const std::string &cond, Stm *const thent, Stm *const elsee) : Stm(Stm::IF), cond(cond), thent(thent), elsee(elsee) {}
+IfStm::IfStm(const std::string &cond, Stm *const thent, Stm *const elsee) : Stm(Kind::IF), cond(cond), thent(thent), elsee(elsee) {}
 
-WhileStm::WhileStm(const std::string &cond, Stm *const body) : Stm(Stm::WHILE), cond(cond), body(body) {}
+WhileStm::WhileStm(const std::string &cond, Stm *const body) : Stm(Kind::WHILE), cond(cond), body(body) {}  
 
-SeqStm::SeqStm() : Stm(Stm::SEQ) {}
+SeqStm::SeqStm() : Stm(Kind::SEQ) {}
 
-SeqStm::SeqStm(Stm *const stm) : Stm(Stm::SEQ) {
+SeqStm::SeqStm(Stm *const stm) : Stm(Kind::SEQ) {
     this->seq.push_back(stm);
 }
 

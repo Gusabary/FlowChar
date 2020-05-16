@@ -31,7 +31,7 @@ struct DrawInfo {
 class Box
 {
 public:
-    enum Kind
+    enum class Kind : int
     {
         SIMPLE,
         IF,

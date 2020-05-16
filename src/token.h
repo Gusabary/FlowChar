@@ -8,7 +8,7 @@ namespace FC { namespace FE {
 class Token
 {  
 public:
-    enum Kind
+    enum class Kind : int
     {
         STM,
         COND,

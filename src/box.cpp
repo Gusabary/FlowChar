@@ -8,15 +8,15 @@ namespace FC { namespace BE {
 
 Box::Box(const Kind kind) : kind(kind) {}
 
-SeqBox::SeqBox() : Box(Box::SEQ) {}
+SeqBox::SeqBox() : Box(Kind::SEQ) {}
 
-SimpleBox::SimpleBox(const std::string &content) : Box(Box::SIMPLE), content(content) {}
+SimpleBox::SimpleBox(const std::string &content) : Box(Kind::SIMPLE), content(content) {}
 
-IfBox::IfBox(const std::string &content, Box *const thent) : Box(Box::IF), content(content), thent(thent), hasNext(false) {}
+IfBox::IfBox(const std::string &content, Box *const thent) : Box(Kind::IF), content(content), thent(thent), hasNext(false) {}
 
-IfBox::IfBox(const std::string &content, Box *const thent, Box *const elsee) : Box(Box::IF), content(content), thent(thent), elsee(elsee), hasNext(false) {}
+IfBox::IfBox(const std::string &content, Box *const thent, Box *const elsee) : Box(Kind::IF), content(content), thent(thent), elsee(elsee), hasNext(false) {}
 
-WhileBox::WhileBox(const std::string &content, Box *const body) : Box(Box::WHILE), content(content), body(body), hasNext(false) {}
+WhileBox::WhileBox(const std::string &content, Box *const body) : Box(Kind::WHILE), content(content), body(body), hasNext(false) {}
 
 AttachInfo SeqBox::Attach() {
     int maxLWidth = 0;
@@ -29,7 +29,7 @@ AttachInfo SeqBox::Attach() {
         maxRWidth = std::max(maxRWidth, ainfo.rWidth);
         
         // determine whether the if box points to a simple box or 'O' eventually
-        if (i > 0 && this->seq[i-1]->kind == Box::IF && this->seq[i]->kind == Box::SIMPLE) {
+        if (i > 0 && this->seq[i-1]->kind == Kind::IF && this->seq[i]->kind == Kind::SIMPLE) {
             IfBox *ifBox = ((IfBox *)(this->seq[i - 1]));
             SimpleBox *simpleBox = ((SimpleBox *)(this->seq[i]));
             ifBox->hasNext = true;
@@ -55,7 +55,7 @@ AttachInfo SeqBox::Attach() {
             maxRWidth = std::max(maxRWidth, ifBox->rWidth);
         }
         // determine whether the while box points to a simple box or 'O' eventually
-        else if (i > 0 && this->seq[i-1]->kind == Box::WHILE && this->seq[i]->kind == Box::SIMPLE) {
+        else if (i > 0 && this->seq[i-1]->kind == Kind::WHILE && this->seq[i]->kind == Kind::SIMPLE) {
             WhileBox *whileBox = ((WhileBox *)(this->seq[i - 1]));
             SimpleBox *simpleBox = ((SimpleBox *)(this->seq[i]));
             whileBox->hasNext = true;
@@ -136,9 +136,9 @@ AttachInfo WhileBox::Attach() {
 
     std::vector<Box *> seq = ((SeqBox *)(this->body))->seq;
     int size = seq.size();
-    if ((size == 1 && seq[0]->kind == Box::SIMPLE) ||
-        (size > 1 && seq[size - 1]->kind == Box::SIMPLE && seq[size - 2]->kind == Box::SIMPLE) ||
-        (size > 1 && seq[size - 1]->kind == Box::SIMPLE && seq[size - 2]->kind == Box::IF && ((IfBox *)(seq[size - 2]))->nSide)) {
+    if ((size == 1 && seq[0]->kind == Kind::SIMPLE) ||
+        (size > 1 && seq[size - 1]->kind == Kind::SIMPLE && seq[size - 2]->kind == Kind::SIMPLE) ||
+        (size > 1 && seq[size - 1]->kind == Kind::SIMPLE && seq[size - 2]->kind == Kind::IF && ((IfBox *)(seq[size - 2]))->nSide)) {
         this->needExtraO = false;
     }
     else {
@@ -218,16 +218,16 @@ DrawInfo SeqBox::Draw(chartT &chart, const posT &pos) {
             return DrawInfo();  // return value from SeqBox::Draw doesn't make sense
 
         // draw arrow
-        if (this->seq[i]->kind == Box::SIMPLE) {
+        if (this->seq[i]->kind == Kind::SIMPLE) {
             drawArrow(chart, std::make_pair(row - 3, col), std::make_pair(row - 2, col));
         }
-        else if (this->seq[i]->kind == Box::IF) {
+        else if (this->seq[i]->kind == Kind::IF) {
             IfBox *ifBox = (IfBox *)(this->seq[i]);
             if (!ifBox->hasNext) {
                 drawArrow(chart, std::make_pair(row - 3, col), std::make_pair(row - 2, col));
                 continue;
             }
-            assert(this->seq[i + 1]->kind == Box::SIMPLE);
+            assert(this->seq[i + 1]->kind == Kind::SIMPLE);
             const int nextHalfWidth = (this->seq[i + 1]->width - 1) / 2;
             if (!ifBox->hasElse) {
                 drawArrow(chart, std::make_pair(row - 3, col), std::make_pair(row - 2, col));  // vertical arrow
@@ -245,13 +245,13 @@ DrawInfo SeqBox::Draw(chartT &chart, const posT &pos) {
                 drawArrow(chart, dinfo.arrowBFrom, std::make_pair(row, col + nextHalfWidth + 1), dinfo.arrowBFrom.second);
             }
         }
-        else if (this->seq[i]->kind == Box::WHILE) {
+        else if (this->seq[i]->kind == Kind::WHILE) {
             WhileBox *whileBox = (WhileBox *)(this->seq[i]);
             if (!whileBox->hasNext) {
                 drawArrow(chart, std::make_pair(row - 3, col), std::make_pair(row - 2, col));
                 continue;
             }
-            assert(this->seq[i + 1]->kind == Box::SIMPLE);
+            assert(this->seq[i + 1]->kind == Kind::SIMPLE);
             const int nextHalfWidth = (this->seq[i + 1]->width - 1) / 2;
             drawArrow(chart, dinfo.arrowAFrom, std::make_pair(row, col - nextHalfWidth - 1), col - this->seq[i]->lWidth);
             chart[dinfo.arrowAFrom.first - 1][dinfo.arrowAFrom.second - 1] = 'N';
@@ -362,7 +362,7 @@ DrawInfo WhileBox::Draw(chartT &chart, const posT &pos) {
     const posT backArrowTo = std::make_pair(pos.first, pos.second + (this->width - 1) / 2 + 1);
     if (!this->needExtraO) {
         Box *lastBox = ((SeqBox *)(this->body))->seq.back();
-        assert(lastBox->kind == Box::SIMPLE);
+        assert(lastBox->kind == Kind::SIMPLE);
         const int lastBoxHalfWidth = (((SimpleBox *)(lastBox))->width - 1) / 2;
         const posT backArrowFrom = std::make_pair(pos.first + this->height - (this->hasNext ? 3 : 6), pos.second + lastBoxHalfWidth + 1);
         drawArrow(chart, backArrowFrom, backArrowTo, pos.second + this->rWidth);

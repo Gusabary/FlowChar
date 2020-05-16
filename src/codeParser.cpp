@@ -86,21 +86,21 @@ void CodeParser::scan() {
 
 void CodeParser::printTokenList() {
     for (Token *token : this->tokenList) {
-        if (token->kind == Token::IF)
+        if (token->kind == Token::Kind::IF)
             std::cout << "if";
-        if (token->kind == Token::ELSE)
+        if (token->kind == Token::Kind::ELSE)
             std::cout << "else";
-        if (token->kind == Token::WHILE)
+        if (token->kind == Token::Kind::WHILE)
             std::cout << "while";
-        if (token->kind == Token::LBRACE)
+        if (token->kind == Token::Kind::LBRACE)
             std::cout << "{";
-        if (token->kind == Token::RBRACE)
+        if (token->kind == Token::Kind::RBRACE)
             std::cout << "}";
-        if (token->kind == Token::STM)
+        if (token->kind == Token::Kind::STM)
             std::cout << "stm-" << ((StmToken *)token)->sstm;
-        if (token->kind == Token::COND)
+        if (token->kind == Token::Kind::COND)
             std::cout << "cond-" << ((CondToken *)token)->cond;
-        if (token->kind == Token::END)
+        if (token->kind == Token::Kind::END)
             std::cout << "$" << std::endl;
         std::cout << "   (" << token->pos.first << ", " << token->pos.second << ")" << std::endl;
     }
@@ -116,28 +116,28 @@ std::shared_ptr<IR::Stm> CodeParser::parse() {
 
     while (true) {
         parsingTableEntry e = this->lookupParsingTable(parseStack.back()->state, this->tokenList[nextToken]->kind, parseStack.back()->pos);
-        if (e.action == parsingTableEntry::SHIFT) {
+        if (e.action == parsingTableEntry::Action::SHIFT) {
             this->tokenList[nextToken]->state = e.num;
             parseStack.push_back(this->tokenList[nextToken]);
-            if (this->tokenList[nextToken]->kind == Token::STM) {
+            if (this->tokenList[nextToken]->kind == Token::Kind::STM) {
                 IR::SimpleStm *sstm = new IR::SimpleStm(((StmToken *)(this->tokenList[nextToken]))->sstm);
                 stmBuf.push_back(sstm);
             }
             nextToken++;
         }
-        else if (e.action == parsingTableEntry::REDUCE) {
+        else if (e.action == parsingTableEntry::Action::REDUCE) {
             IR::Stm *tmpStm;
             int back = stmBuf.size() - 1;
             if (e.num == 4)
             {
-                assert(stmBuf[back]->kind != IR::Stm::SEQ);
+                assert(stmBuf[back]->kind != IR::Stm::Kind::SEQ);
                 IR::Stm *newStm = new IR::SeqStm(stmBuf[back]);
                 stmBuf.pop_back();
                 stmBuf.push_back(newStm);
             }
             else if (e.num == 5) {
-                assert(stmBuf[back]->kind == IR::Stm::SEQ);
-                assert(stmBuf[back-1]->kind != IR::Stm::SEQ);
+                assert(stmBuf[back]->kind == IR::Stm::Kind::SEQ);
+                assert(stmBuf[back-1]->kind != IR::Stm::Kind::SEQ);
                 IR::Stm *seq = stmBuf[back];
                 ((IR::SeqStm *)seq)->seq.insert(((IR::SeqStm *)seq)->seq.begin(), stmBuf[back - 1]);
                 stmBuf.pop_back();
@@ -145,17 +145,17 @@ std::shared_ptr<IR::Stm> CodeParser::parse() {
                 stmBuf.push_back(seq);
             }
             else if (e.num == 3) {
-                assert(stmBuf[back]->kind == IR::Stm::SEQ);
-                assert(parseStack[parseStack.size() - 4]->kind == Token::COND);
+                assert(stmBuf[back]->kind == IR::Stm::Kind::SEQ);
+                assert(parseStack[parseStack.size() - 4]->kind == Token::Kind::COND);
                 std::string cond = ((CondToken *)(parseStack[parseStack.size() - 4]))->cond;
                 IR::Stm *newStm = new IR::WhileStm(cond, stmBuf[back]);
                 stmBuf.pop_back();
                 stmBuf.push_back(newStm);
             }
             else if (e.num == 2) {
-                assert(stmBuf[back]->kind == IR::Stm::SEQ);
-                assert(stmBuf[back-1]->kind == IR::Stm::SEQ);
-                assert(parseStack[parseStack.size() - 8]->kind == Token::COND);
+                assert(stmBuf[back]->kind == IR::Stm::Kind::SEQ);
+                assert(stmBuf[back-1]->kind == IR::Stm::Kind::SEQ);
+                assert(parseStack[parseStack.size() - 8]->kind == Token::Kind::COND);
                 std::string cond = ((CondToken *)(parseStack[parseStack.size() - 8]))->cond;
                 IR::Stm *newStm = new IR::IfStm(cond, stmBuf[back - 1], stmBuf[back]);
                 stmBuf.pop_back();
@@ -163,8 +163,8 @@ std::shared_ptr<IR::Stm> CodeParser::parse() {
                 stmBuf.push_back(newStm);
             }
             else if (e.num == 1) {
-                assert(stmBuf[back]->kind == IR::Stm::SEQ);
-                assert(parseStack[parseStack.size() - 4]->kind == Token::COND);
+                assert(stmBuf[back]->kind == IR::Stm::Kind::SEQ);
+                assert(parseStack[parseStack.size() - 4]->kind == Token::Kind::COND);
                 std::string cond = ((CondToken *)(parseStack[parseStack.size() - 4]))->cond;
                 IR::Stm *newStm = new IR::IfStm(cond, stmBuf[back]);
                 stmBuf.pop_back();
@@ -183,7 +183,7 @@ std::shared_ptr<IR::Stm> CodeParser::parse() {
             int newState = this->lookupParsingTable(parseStack.back()->state, rinfo.newTokenKind, parseStack.back()->pos).num;
             parseStack.push_back(new Token(rinfo.newTokenKind, newState, newPos));
         }
-        else if (e.action == parsingTableEntry::ACCEPT) {
+        else if (e.action == parsingTableEntry::Action::ACCEPT) {
             assert(stmBuf.size() == 1);
             tree.reset(stmBuf[0]);
             break;
@@ -199,15 +199,15 @@ std::shared_ptr<IR::Stm> CodeParser::parse() {
 CodeParser::reductionInfo CodeParser::getReductionInfo(int productionNum) {
     switch (productionNum) {
         case 1:
-            return reductionInfo(Token::STM, 5);
+            return reductionInfo(Token::Kind::STM, 5);
         case 2:
-            return reductionInfo(Token::STM, 9);
+            return reductionInfo(Token::Kind::STM, 9);
         case 3:
-            return reductionInfo(Token::STM, 5);
+            return reductionInfo(Token::Kind::STM, 5);
         case 4:
-            return reductionInfo(Token::SEQ, 1);
+            return reductionInfo(Token::Kind::SEQ, 1);
         case 5:
-            return reductionInfo(Token::SEQ, 2);
+            return reductionInfo(Token::Kind::SEQ, 2);
     }
     assert(0);
 }
@@ -216,206 +216,206 @@ CodeParser::parsingTableEntry CodeParser::lookupParsingTable(int cntState, Token
     switch (cntState) {
         case 1: {
             switch (tokenKind) {
-                case Token::STM:
-                    return parsingTableEntry(parsingTableEntry::SHIFT, 4);
-                case Token::IF:
-                    return parsingTableEntry(parsingTableEntry::SHIFT, 2);
-                case Token::WHILE:
-                    return parsingTableEntry(parsingTableEntry::SHIFT, 3);
-                case Token::SEQ:
-                    return parsingTableEntry(parsingTableEntry::GOTO, 18);
+                case Token::Kind::STM:
+                    return parsingTableEntry(parsingTableEntry::Action::SHIFT, 4);
+                case Token::Kind::IF:
+                    return parsingTableEntry(parsingTableEntry::Action::SHIFT, 2);
+                case Token::Kind::WHILE:
+                    return parsingTableEntry(parsingTableEntry::Action::SHIFT, 3);
+                case Token::Kind::SEQ:
+                    return parsingTableEntry(parsingTableEntry::Action::GOTO, 18);
                 }
                 std::cout << "Compile error near (" << pos.first << ", " << pos.second << ")." << std::endl;
                 exit(-1);
         }
         case 2: {
             switch (tokenKind) {
-                case Token::COND:
-                    return parsingTableEntry(parsingTableEntry::SHIFT, 6);
+                case Token::Kind::COND:
+                    return parsingTableEntry(parsingTableEntry::Action::SHIFT, 6);
             }
             std::cout << "Compile error near (" << pos.first << ", " << pos.second << ")." << std::endl;
                 exit(-1);
         }
         case 3: {
             switch (tokenKind) {
-                case Token::COND:
-                    return parsingTableEntry(parsingTableEntry::SHIFT, 14);
+                case Token::Kind::COND:
+                    return parsingTableEntry(parsingTableEntry::Action::SHIFT, 14);
             }
             std::cout << "Compile error near (" << pos.first << ", " << pos.second << ")." << std::endl;
                 exit(-1);
         }
         case 4: {
             switch (tokenKind) {
-                case Token::STM:
-                    return parsingTableEntry(parsingTableEntry::SHIFT, 4);
-                case Token::IF:
-                    return parsingTableEntry(parsingTableEntry::SHIFT, 2);
-                case Token::WHILE:
-                    return parsingTableEntry(parsingTableEntry::SHIFT, 3);
-                case Token::RBRACE:
-                    return parsingTableEntry(parsingTableEntry::REDUCE, 4);
-                case Token::END:
-                    return parsingTableEntry(parsingTableEntry::REDUCE, 4);
-                case Token::SEQ:
-                    return parsingTableEntry(parsingTableEntry::GOTO, 5);
+                case Token::Kind::STM:
+                    return parsingTableEntry(parsingTableEntry::Action::SHIFT, 4);
+                case Token::Kind::IF:
+                    return parsingTableEntry(parsingTableEntry::Action::SHIFT, 2);
+                case Token::Kind::WHILE:
+                    return parsingTableEntry(parsingTableEntry::Action::SHIFT, 3);
+                case Token::Kind::RBRACE:
+                    return parsingTableEntry(parsingTableEntry::Action::REDUCE, 4);
+                case Token::Kind::END:
+                    return parsingTableEntry(parsingTableEntry::Action::REDUCE, 4);
+                case Token::Kind::SEQ:
+                    return parsingTableEntry(parsingTableEntry::Action::GOTO, 5);
             }
             std::cout << "Compile error near (" << pos.first << ", " << pos.second << ")." << std::endl;
                 exit(-1);
         }
         case 5: {
             switch (tokenKind) {
-                case Token::RBRACE:
-                    return parsingTableEntry(parsingTableEntry::REDUCE, 5);
-                case Token::END:
-                    return parsingTableEntry(parsingTableEntry::REDUCE, 5);
+                case Token::Kind::RBRACE:
+                    return parsingTableEntry(parsingTableEntry::Action::REDUCE, 5);
+                case Token::Kind::END:
+                    return parsingTableEntry(parsingTableEntry::Action::REDUCE, 5);
             }
             std::cout << "Compile error near (" << pos.first << ", " << pos.second << ")." << std::endl;
                 exit(-1);
         }
         case 6: {
             switch (tokenKind) {
-                case Token::LBRACE:
-                    return parsingTableEntry(parsingTableEntry::SHIFT, 7);
+                case Token::Kind::LBRACE:
+                    return parsingTableEntry(parsingTableEntry::Action::SHIFT, 7);
             }
             std::cout << "Compile error near (" << pos.first << ", " << pos.second << ")." << std::endl;
                 exit(-1);
         }
         case 7: {
             switch (tokenKind) {
-                case Token::STM:
-                    return parsingTableEntry(parsingTableEntry::SHIFT, 4);
-                case Token::IF:
-                    return parsingTableEntry(parsingTableEntry::SHIFT, 2);
-                case Token::WHILE:
-                    return parsingTableEntry(parsingTableEntry::SHIFT, 3);
-                case Token::SEQ:
-                    return parsingTableEntry(parsingTableEntry::GOTO, 8);
+                case Token::Kind::STM:
+                    return parsingTableEntry(parsingTableEntry::Action::SHIFT, 4);
+                case Token::Kind::IF:
+                    return parsingTableEntry(parsingTableEntry::Action::SHIFT, 2);
+                case Token::Kind::WHILE:
+                    return parsingTableEntry(parsingTableEntry::Action::SHIFT, 3);
+                case Token::Kind::SEQ:
+                    return parsingTableEntry(parsingTableEntry::Action::GOTO, 8);
             }
             std::cout << "Compile error near (" << pos.first << ", " << pos.second << ")." << std::endl;
                 exit(-1);
         }
         case 8: {
             switch (tokenKind) {
-                case Token::RBRACE:
-                    return parsingTableEntry(parsingTableEntry::SHIFT, 9);
+                case Token::Kind::RBRACE:
+                    return parsingTableEntry(parsingTableEntry::Action::SHIFT, 9);
             }
             std::cout << "Compile error near (" << pos.first << ", " << pos.second << ")." << std::endl;
                 exit(-1);
         }
         case 9: {
             switch (tokenKind) {
-                case Token::STM:
-                    return parsingTableEntry(parsingTableEntry::REDUCE, 1);
-                case Token::IF:
-                    return parsingTableEntry(parsingTableEntry::REDUCE, 1);
-                case Token::ELSE:
-                    return parsingTableEntry(parsingTableEntry::SHIFT, 10);
-                case Token::WHILE:
-                    return parsingTableEntry(parsingTableEntry::REDUCE, 1);
-                case Token::RBRACE:
-                    return parsingTableEntry(parsingTableEntry::REDUCE, 1);
-                case Token::END:
-                    return parsingTableEntry(parsingTableEntry::REDUCE, 1);
+                case Token::Kind::STM:
+                    return parsingTableEntry(parsingTableEntry::Action::REDUCE, 1);
+                case Token::Kind::IF:
+                    return parsingTableEntry(parsingTableEntry::Action::REDUCE, 1);
+                case Token::Kind::ELSE:
+                    return parsingTableEntry(parsingTableEntry::Action::SHIFT, 10);
+                case Token::Kind::WHILE:
+                    return parsingTableEntry(parsingTableEntry::Action::REDUCE, 1);
+                case Token::Kind::RBRACE:
+                    return parsingTableEntry(parsingTableEntry::Action::REDUCE, 1);
+                case Token::Kind::END:
+                    return parsingTableEntry(parsingTableEntry::Action::REDUCE, 1);
             }
             std::cout << "Compile error near (" << pos.first << ", " << pos.second << ")." << std::endl;
                 exit(-1);
         }
         case 10: {
             switch (tokenKind) {
-                case Token::LBRACE:
-                    return parsingTableEntry(parsingTableEntry::SHIFT, 11);
+                case Token::Kind::LBRACE:
+                    return parsingTableEntry(parsingTableEntry::Action::SHIFT, 11);
             }
             std::cout << "Compile error near (" << pos.first << ", " << pos.second << ")." << std::endl;
                 exit(-1);
         }
         case 11: {
             switch (tokenKind) {
-                case Token::STM:
-                    return parsingTableEntry(parsingTableEntry::SHIFT, 4);
-                case Token::IF:
-                    return parsingTableEntry(parsingTableEntry::SHIFT, 2);
-                case Token::WHILE:
-                    return parsingTableEntry(parsingTableEntry::SHIFT, 3);
-                case Token::SEQ:
-                    return parsingTableEntry(parsingTableEntry::GOTO, 12);
+                case Token::Kind::STM:
+                    return parsingTableEntry(parsingTableEntry::Action::SHIFT, 4);
+                case Token::Kind::IF:
+                    return parsingTableEntry(parsingTableEntry::Action::SHIFT, 2);
+                case Token::Kind::WHILE:
+                    return parsingTableEntry(parsingTableEntry::Action::SHIFT, 3);
+                case Token::Kind::SEQ:
+                    return parsingTableEntry(parsingTableEntry::Action::GOTO, 12);
             }
             std::cout << "Compile error near (" << pos.first << ", " << pos.second << ")." << std::endl;
                 exit(-1);
         }
         case 12: {
             switch (tokenKind) {
-                case Token::RBRACE:
-                    return parsingTableEntry(parsingTableEntry::SHIFT, 13);
+                case Token::Kind::RBRACE:
+                    return parsingTableEntry(parsingTableEntry::Action::SHIFT, 13);
             }
             std::cout << "Compile error near (" << pos.first << ", " << pos.second << ")." << std::endl;
                 exit(-1);
         }
         case 13: {
             switch (tokenKind) {
-                case Token::STM:
-                    return parsingTableEntry(parsingTableEntry::REDUCE, 2);
-                case Token::IF:
-                    return parsingTableEntry(parsingTableEntry::REDUCE, 2);
-                case Token::WHILE:
-                    return parsingTableEntry(parsingTableEntry::REDUCE, 2);
-                case Token::RBRACE:
-                    return parsingTableEntry(parsingTableEntry::REDUCE, 2);
-                case Token::END:
-                    return parsingTableEntry(parsingTableEntry::REDUCE, 2);
+                case Token::Kind::STM:
+                    return parsingTableEntry(parsingTableEntry::Action::REDUCE, 2);
+                case Token::Kind::IF:
+                    return parsingTableEntry(parsingTableEntry::Action::REDUCE, 2);
+                case Token::Kind::WHILE:
+                    return parsingTableEntry(parsingTableEntry::Action::REDUCE, 2);
+                case Token::Kind::RBRACE:
+                    return parsingTableEntry(parsingTableEntry::Action::REDUCE, 2);
+                case Token::Kind::END:
+                    return parsingTableEntry(parsingTableEntry::Action::REDUCE, 2);
             }
             std::cout << "Compile error near (" << pos.first << ", " << pos.second << ")." << std::endl;
                 exit(-1);
         }
         case 14: {
             switch (tokenKind) {
-                case Token::LBRACE:
-                    return parsingTableEntry(parsingTableEntry::SHIFT, 15);
+                case Token::Kind::LBRACE:
+                    return parsingTableEntry(parsingTableEntry::Action::SHIFT, 15);
             }
             std::cout << "Compile error near (" << pos.first << ", " << pos.second << ")." << std::endl;
                 exit(-1);
         }
         case 15: {
             switch (tokenKind) {
-                case Token::STM:
-                    return parsingTableEntry(parsingTableEntry::SHIFT, 4);
-                case Token::IF:
-                    return parsingTableEntry(parsingTableEntry::SHIFT, 2);
-                case Token::WHILE:
-                    return parsingTableEntry(parsingTableEntry::SHIFT, 3);
-                case Token::SEQ:
-                    return parsingTableEntry(parsingTableEntry::GOTO, 16);
+                case Token::Kind::STM:
+                    return parsingTableEntry(parsingTableEntry::Action::SHIFT, 4);
+                case Token::Kind::IF:
+                    return parsingTableEntry(parsingTableEntry::Action::SHIFT, 2);
+                case Token::Kind::WHILE:
+                    return parsingTableEntry(parsingTableEntry::Action::SHIFT, 3);
+                case Token::Kind::SEQ:
+                    return parsingTableEntry(parsingTableEntry::Action::GOTO, 16);
             }
             std::cout << "Compile error near (" << pos.first << ", " << pos.second << ")." << std::endl;
                 exit(-1);
         }
         case 16: {
             switch (tokenKind) {
-                case Token::RBRACE:
-                    return parsingTableEntry(parsingTableEntry::SHIFT, 17);
+                case Token::Kind::RBRACE:
+                    return parsingTableEntry(parsingTableEntry::Action::SHIFT, 17);
             }
             std::cout << "Compile error near (" << pos.first << ", " << pos.second << ")." << std::endl;
                 exit(-1);
         }
         case 17: {
             switch (tokenKind) {
-                case Token::STM:
-                    return parsingTableEntry(parsingTableEntry::REDUCE, 3);
-                case Token::IF:
-                    return parsingTableEntry(parsingTableEntry::REDUCE, 3);
-                case Token::WHILE:
-                    return parsingTableEntry(parsingTableEntry::REDUCE, 3);
-                case Token::RBRACE:
-                    return parsingTableEntry(parsingTableEntry::REDUCE, 3);
-                case Token::END:
-                    return parsingTableEntry(parsingTableEntry::REDUCE, 3);
+                case Token::Kind::STM:
+                    return parsingTableEntry(parsingTableEntry::Action::REDUCE, 3);
+                case Token::Kind::IF:
+                    return parsingTableEntry(parsingTableEntry::Action::REDUCE, 3);
+                case Token::Kind::WHILE:
+                    return parsingTableEntry(parsingTableEntry::Action::REDUCE, 3);
+                case Token::Kind::RBRACE:
+                    return parsingTableEntry(parsingTableEntry::Action::REDUCE, 3);
+                case Token::Kind::END:
+                    return parsingTableEntry(parsingTableEntry::Action::REDUCE, 3);
             }
             std::cout << "Compile error near (" << pos.first << ", " << pos.second << ")." << std::endl;
                 exit(-1);
         }
         case 18: {
             switch (tokenKind) {
-                case Token::END:
-                    return parsingTableEntry(parsingTableEntry::ACCEPT);
+                case Token::Kind::END:
+                    return parsingTableEntry(parsingTableEntry::Action::ACCEPT);
             }
             std::cout << "Compile error near (" << pos.first << ", " << pos.second << ")." << std::endl;
                 exit(-1);

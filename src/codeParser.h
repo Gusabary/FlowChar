@@ -16,7 +16,7 @@ private:
     std::vector<Token *> tokenList;
 
     struct parsingTableEntry {
-        enum Action {
+        enum class Action : int {
             SHIFT,
             GOTO,
             REDUCE,
