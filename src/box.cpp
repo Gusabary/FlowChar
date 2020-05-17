@@ -1,6 +1,7 @@
 #include <iostream>
 #include <math.h>
 #include <cassert>
+#include <algorithm>
 
 #include "box.h"
 
