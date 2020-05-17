@@ -1,6 +1,6 @@
 # FlowChar
 
-![](https://img.shields.io/badge/version-v1.0-9cf)
+![](https://img.shields.io/badge/version-v1.1-9cf)
 
 A tiny tool for conversion from pseudo-code to flowchart in character format.
 
@@ -63,8 +63,13 @@ First clone the repository and build:
 ```bash
 git clone https://github.com/Gusabary/FlowChar.git
 cd FlowChar
+
+# for linux
 chmod +x ./build.sh
 ./build.sh
+
+# for windows
+.\build.bat
 ```
 
 Then execute the binary with pseudo-code file and, optionally, output file specified. If no output file is provided, the emitted flowchart would be printed to stdout:
@@ -144,4 +149,4 @@ Only sequential structure, branch structure controlled by `if-else` and loop str
 
 [MIT](./LICENSE)
 
-##### Last-modified date: 2020.2.5, 3 p.m.
+##### Last-modified date: 2020.5.17, 4 p.m.

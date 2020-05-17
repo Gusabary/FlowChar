@@ -2,7 +2,7 @@
 
 # FlowChar
 
-![](https://img.shields.io/badge/version-v1.0-9cf)
+![](https://img.shields.io/badge/version-v1.1-9cf)
 
 一个用来从伪代码生成纯字符格式流程图的小工具。
 
@@ -69,8 +69,13 @@ die;
 ```bash
 git clone https://github.com/Gusabary/FlowChar.git
 cd FlowChar
+
+# for linux
 chmod +x ./build.sh
 ./build.sh
+
+# for windows
+.\build.bat
 ```
 
 然后指定伪代码文件，可选地，可以指定流程图输出文件，缺省的话会打印到标准输出：
@@ -150,4 +155,4 @@ docker run -v /path/to/dir:/app/files gusabary/flowchar:v1.0 -c files/code -o fi
 
 [MIT](./LICENSE)
 
-##### Last-modified date: 2020.2.5, 3 p.m.
+##### Last-modified date: 2020.5.17, 4 p.m.
